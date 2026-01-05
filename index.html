@@ -1,0 +1,4112 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Halat Savdosi Tizimi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Asosiy CSS */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --border: #bdc3c7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 5px;
+            font-size: 14px;
+        }
+        
+        /* Kontayner */
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        /* Sarlavha */
+        .header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .header h1 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header h1 i {
+            font-size: 1.6rem;
+        }
+        
+        /* Navbar */
+        .navbar {
+            display: flex;
+            background-color: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark);
+            transition: all 0.3s;
+            border-right: 1px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            justify-content: center;
+            min-width: 90px;
+            font-size: 12px;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--light);
+        }
+        
+        .nav-btn.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        /* Kartalar */
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Formalar */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 13px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        
+        /* Tugmalar */
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        /* Jadval */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--light);
+            white-space: nowrap;
+        }
+        
+        .table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        /* Grid */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -8px;
+        }
+        
+        .col {
+            flex: 1;
+            padding: 0 8px;
+            min-width: 100%;
+        }
+        
+        /* Statistik kartalar */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: white;
+        }
+        
+        .stat-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        
+        .stat-info p {
+            color: #666;
+            font-size: 11px;
+        }
+        
+        /* Kirish sahifasi */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            flex-direction: column;
+        }
+        
+        .login-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 95%;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .login-card h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .user-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .user-type-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: 2px solid var(--light);
+            border-radius: 10px;
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-type-btn:hover {
+            border-color: var(--secondary);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .user-type-btn.active {
+            border-color: var(--secondary);
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary);
+        }
+        
+        /* Mijoz sahifasi */
+        .client-info {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        .client-id {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 95%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background-color: #d5f4e6;
+            color: var(--success);
+        }
+        
+        .badge-danger {
+            background-color: #fadbd8;
+            color: var(--danger);
+        }
+        
+        .badge-warning {
+            background-color: #fdebd0;
+            color: var(--warning);
+        }
+        
+        .badge-primary {
+            background-color: #d6eaf8;
+            color: var(--secondary);
+        }
+        
+        /* Responsive */
+        @media (min-width: 576px) {
+            body {
+                font-size: 15px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .col {
+                min-width: 50%;
+            }
+            
+            .nav-btn {
+                font-size: 13px;
+                min-width: 110px;
+            }
+            
+            .table {
+                font-size: 13px;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .col {
+                min-width: 50%;
+            }
+            
+            .nav-btn {
+                font-size: 14px;
+                min-width: 120px;
+            }
+            
+            .table {
+                font-size: 14px;
+            }
+            
+            .card-title {
+                font-size: 1.4rem;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .col {
+                min-width: 300px;
+            }
+        }
+        
+        /* PDF tugmasi */
+        .pdf-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Xabarlar */
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .alert-success {
+            background-color: #d5f4e6;
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+        
+        .alert-danger {
+            background-color: #fadbd8;
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .alert-warning {
+            background-color: #fdebd0;
+            color: var(--warning);
+            border-left: 4px solid var(--warning);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--light);
+            margin-bottom: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab-btn {
+            padding: 10px 18px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+        
+        .tab-btn:hover {
+            color: var(--secondary);
+        }
+        
+        .tab-btn.active {
+            color: var(--secondary);
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Yana ko'p qatorli matn maydoni */
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* Kichik tugmalar */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        /* Input guruhlari */
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .input-group .form-control {
+            flex: 1;
+        }
+        
+        /* Bo'sh holat */
+        .empty-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: #ddd;
+        }
+        
+        /* Mijoz sahifasi uchun yangi stil */
+        .client-summary {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .client-summary h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+        
+        .client-summary p {
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        /* Select elementlariga responsive stil */
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 35px;
+        }
+        
+        /* Mobil uchun maxsus stillar */
+        .mobile-only {
+            display: block;
+        }
+        
+        .desktop-only {
+            display: none;
+        }
+        
+        /* Kichik ekranlar uchun */
+        @media (max-width: 575px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .navbar {
+                flex-direction: column;
+            }
+            
+            .nav-btn {
+                border-right: none;
+                border-bottom: 1px solid var(--light);
+                justify-content: flex-start;
+                padding: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-type-btn {
+                min-width: 100px;
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                width: 100%;
+            }
+            
+            .pdf-btn {
+                bottom: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .modal-content {
+                padding: 15px;
+            }
+        }
+        
+        /* Tablet uchun */
+        @media (min-width: 576px) and (max-width: 767px) {
+            .mobile-only {
+                display: none;
+            }
+            
+            .desktop-only {
+                display: block;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Kompyuter uchun */
+        @media (min-width: 768px) {
+            .mobile-only {
+                display: none;
+            }
+            
+            .desktop-only {
+                display: block;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .btn {
+                width: auto;
+            }
+        }
+        
+        /* Inputlar uchun mobil klaviatura */
+        input[type="number"],
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            font-size: 16px !important; /* iOS da zoomni oldini olish */
+        }
+    </style>
+</head>
+<body>
+    <!-- Kirish sahifasi -->
+    <div id="loginPage" class="container login-container">
+        <div class="login-card">
+            <h2><i class="fas fa-warehouse"></i> Halat Savdosi Tizimi</h2>
+            <p class="form-label">Siz kimsiz?</p>
+            <div class="user-type-selector">
+                <button id="clientBtn" class="user-type-btn active">
+                    <i class="fas fa-user fa-2x"></i>
+                    <span>Mijoz</span>
+                </button>
+                <button id="adminBtn" class="user-type-btn">
+                    <i class="fas fa-user-shield fa-2x"></i>
+                    <span>Sotuvchi</span>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" id="idLabel">Mijoz ID raqamini kiriting (6 xonali)</label>
+                <input type="text" id="userId" class="form-control" placeholder="Masalan: 482931" maxlength="6" inputmode="numeric">
+            </div>
+            
+            <div id="loginError" class="alert alert-danger" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText">Noto'g'ri ID raqam!</span>
+            </div>
+            
+            <button id="loginButton" class="btn btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i> Kirish
+            </button>
+            
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+                <p><i class="fas fa-info-circle"></i> Mijoz ID raqami sizga halat sotilganda beriladi</p>
+                <p><i class="fas fa-info-circle"></i> Sotuvchilar uchun parol NOMONOV tomonidan berilgan</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Asosiy tizim sahifasi -->
+    <div id="mainPage" class="container" style="display: none;">
+        <!-- Sarlavha -->
+        <div class="header">
+            <h1><i class="fas fa-tshirt"></i> Halat Savdosi</h1>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <span id="currentUserType"></span>
+                <button id="logoutBtn" class="btn btn-warning btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Chiqish
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mijoz ma'lumotlari (faqat mijoz rejimida) -->
+        <div id="clientInfoCard" class="card" style="display: none;">
+            <div class="client-info">
+                <div class="client-id">Mijoz ID: <span id="clientIdDisplay"></span></div>
+                <h2 id="clientNameDisplay"></h2>
+            </div>
+            
+            <!-- Mijoz statistikasi (soddalashtirilgan) -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--primary);">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientTotalDebt">0 so'm</h3>
+                        <p>Jami qarz qoldig'i</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--secondary);">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientTotalProducts">0 dona</h3>
+                        <p>Jami olingan mahsulot</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigatsiya (faqat admin rejimida) -->
+        <div id="adminNav" class="navbar" style="display: none;">
+            <button class="nav-btn active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i> Boshqaruv
+            </button>
+            <button class="nav-btn" data-page="workshops">
+                <i class="fas fa-industry"></i> Sexlar
+            </button>
+            <button class="nav-btn" data-page="storage">
+                <i class="fas fa-warehouse"></i> Ombor
+            </button>
+            <button class="nav-btn" data-page="income">
+                <i class="fas fa-arrow-right"></i> Kirim
+            </button>
+            <button class="nav-btn" data-page="sales">
+                <i class="fas fa-shopping-cart"></i> Sotuv
+            </button>
+            <button class="nav-btn" data-page="returns">
+                <i class="fas fa-exchange-alt"></i> Qaytish
+            </button>
+            <button class="nav-btn" data-page="debts">
+                <i class="fas fa-file-invoice-dollar"></i> Qarzlar
+            </button>
+        </div>
+        
+        <!-- Asosiy kontent -->
+        <div id="pageContent">
+            <!-- Mijoz sahifasi kontenti -->
+            <div id="clientPage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-user"></i> Mening hisobim</h2>
+                    
+                    <div class="client-summary">
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: var(--primary); margin-bottom: 8px;">Mening ma'lumotlarim</h3>
+                            <p><strong>Mijoz ID:</strong> <span id="clientIdDisplay2"></span></p>
+                            <p><strong>Ism:</strong> <span id="clientNameDisplay2"></span></p>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background-color: var(--secondary);">
+                                    <i class="fas fa-tshirt"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="clientTotalProducts2">0 dona</h3>
+                                    <p>Jami olingan halatlar</p>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background-color: var(--danger);">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="clientTotalDebt2">0 so'm</h3>
+                                    <p>Jami qarzingiz</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; margin: 0 auto;">
+                            <h4 style="margin-bottom: 12px; color: var(--primary); font-size: 1.1rem;">
+                                <i class="fas fa-info-circle"></i> Qarz to'lovlari haqida
+                            </h4>
+                            <p style="color: #666; line-height: 1.5; font-size: 13px;">
+                                Qarz to'lovlarini faqat tizim administratori amalga oshira oladi. 
+                                To'lov qilish uchun administrator bilan bog'laning.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Boshqaruv paneli (admin) -->
+            <div id="dashboardPage" class="page-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-tachometer-alt"></i> Boshqaruv paneli</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background-color: var(--primary);">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalProducts">0</h3>
+                                <p>Ombor qoldig'i</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background-color: var(--success);">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalProfit">0 so'm</h3>
+                                <p>Jami foyda</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background-color: var(--danger);">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalDebts">0 so'm</h3>
+                                <p>Jami qarzlar</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background-color: var(--warning);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalDefects">0</h3>
+                                <p>Jami brak</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="card">
+                                <h3 class="card-title"><i class="fas fa-chart-bar"></i> So'nggi harakatlar</h3>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Sana</th>
+                                                <th>Turi</th>
+                                                <th>Miqdori</th>
+                                                <th>Summa</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentActivities">
+                                            <!-- Faoliyatlar bu yerda ko'rsatiladi -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="activitiesEmpty" class="empty-state" style="display: none;">
+                                    <i class="fas fa-history"></i>
+                                    <h3>Hozircha harakatlar mavjud emas</h3>
+                                    <p>Tizimda hali harakatlar amalga oshirilmagan</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card">
+                                <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Bugungi hisobot</h3>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Kirim:</strong></td>
+                                                <td id="todayIncome">0 dona</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Sotuv:</strong></td>
+                                                <td id="todaySales">0 dona</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Foyda:</strong></td>
+                                                <td id="todayProfit">0 so'm</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Brak:</strong></td>
+                                                <td id="todayDefects">0 dona</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sexlar -->
+            <div id="workshopsPage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-industry"></i> Sexlar boshqaruvi</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="addWorkshopTab">Yangi sex</button>
+                        <button class="tab-btn" data-tab="workshopsListTab">Sexlar ro'yxati</button>
+                    </div>
+                    
+                    <div id="addWorkshopTab" class="tab-content active">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-plus-circle"></i> Yangi sex qo'shish</h3>
+                            <div class="form-group">
+                                <label class="form-label">Sex nomi *</label>
+                                <input type="text" id="workshopName" class="form-control" placeholder="Masalan: AKMAL AKA">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefon raqami</label>
+                                <input type="tel" id="workshopPhone" class="form-control" placeholder="+998901234567" inputmode="tel">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Manzil</label>
+                                <input type="text" id="workshopAddress" class="form-control" placeholder="Sex manzili">
+                            </div>
+                            <button id="addWorkshopBtn" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Sex qo'shish
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="workshopsListTab" class="tab-content">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-list"></i> Mavjud sexlar</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>№</th>
+                                            <th>Sex nomi</th>
+                                            <th>Telefon</th>
+                                            <th>Qarz</th>
+                                            <th>Harakatlar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="workshopsList">
+                                        <!-- Sexlar ro'yxati bu yerda ko'rsatiladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="workshopsEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-industry"></i>
+                                <h3>Hozircha sexlar mavjud emas</h3>
+                                <p>Yangi sex qo'shish uchun "Yangi sex" tabiga o'ting</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ombor -->
+            <div id="storagePage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-warehouse"></i> Ombor hisobi</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="storageSummary">Umumiy qoldiq</button>
+                    </div>
+                    
+                    <div id="storageSummary" class="tab-content active">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Sex va Halat turi</th>
+                                        <th>Kirim</th>
+                                        <th>Sotuv</th>
+                                        <th>Brak</th>
+                                        <th>Qoldiq</th>
+                                        <th>O'rtacha narx</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="storageSummaryBody">
+                                    <!-- Ombor qoldiqlari bu yerda ko'rsatiladi -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="storageSummaryEmpty" class="empty-state" style="display: none;">
+                            <i class="fas fa-warehouse"></i>
+                            <h3>Ombor bo'sh</h3>
+                            <p>Hozircha omborda mahsulot mavjud emas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kirim (Sexdan) -->
+            <div id="incomePage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-arrow-right"></i> Sexdan kirim qilish</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="addIncomeTab">Yangi kirim</button>
+                        <button class="tab-btn" data-tab="incomeHistoryTab">Kirim tarixi</button>
+                    </div>
+                    
+                    <div id="addIncomeTab" class="tab-content active">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-plus-circle"></i> Yangi kirim</h3>
+                            <div class="form-group">
+                                <label class="form-label">Sana *</label>
+                                <input type="date" id="incomeDate" class="form-control" value="">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sex *</label>
+                                <select id="incomeWorkshop" class="form-control">
+                                    <option value="">Sexni tanlang</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Halat turi *</label>
+                                <input type="text" id="incomeProductType" class="form-control" placeholder="Masalan: Oddiy, Gilam, Baxmal">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Miqdori (dona) *</label>
+                                <input type="number" id="incomeQuantity" class="form-control" placeholder="0" min="1" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">1 dona kelish narxi (so'm) *</label>
+                                <input type="number" id="incomePrice" class="form-control" placeholder="0" min="0" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">To'langan summa (so'm)</label>
+                                <input type="number" id="incomePaid" class="form-control" placeholder="0" min="0" inputmode="numeric">
+                                <small style="color: #666;">Agar to'liq to'lanmagan bo'lsa, qarzga yoziladi</small>
+                            </div>
+                            <button id="addIncomeBtn" class="btn btn-success">
+                                <i class="fas fa-check"></i> Kirimni saqlash
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="incomeHistoryTab" class="tab-content">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-history"></i> Kirimlar tarixi</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sana</th>
+                                            <th>Sex</th>
+                                            <th>Halat turi</th>
+                                            <th>Miqdori</th>
+                                            <th>To'langan</th>
+                                            <th>Qarz</th>
+                                            <th>O'chirish</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="incomeHistory">
+                                        <!-- Kirim tarixi bu yerda ko'rsatiladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="incomeHistoryEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-arrow-right"></i>
+                                <h3>Kirimlar mavjud emas</h3>
+                                <p>Hozircha sexdan kirim qilinmagan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sotuv -->
+            <div id="salesPage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-shopping-cart"></i> Mijozga sotish</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="newSale">Yangi sotuv</button>
+                        <button class="tab-btn" data-tab="salesHistory">Sotuv tarixi</button>
+                        <button class="tab-btn" data-tab="clients">Mijozlar</button>
+                    </div>
+                    
+                    <div id="newSale" class="tab-content active">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-cart-plus"></i> Sotuv ma'lumotlari</h3>
+                            <div class="form-group">
+                                <label class="form-label">Mijoz *</label>
+                                <div class="input-group">
+                                    <select id="saleClient" class="form-control">
+                                        <option value="">Mijozni tanlang</option>
+                                    </select>
+                                    <button id="newClientBtn" class="btn btn-primary" style="min-width: 70px;">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sana *</label>
+                                <input type="date" id="saleDate" class="form-control" value="">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Halat turi *</label>
+                                <select id="saleProductType" class="form-control">
+                                    <option value="">Halat turini tanlang</option>
+                                </select>
+                                <small style="color: #666;">Ombor qoldig'i: <span id="productStockInfo">0 dona</span></small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Miqdori (dona) *</label>
+                                <input type="number" id="saleQuantity" class="form-control" placeholder="0" min="1" inputmode="numeric">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">1 dona sotish narxi (so'm) *</label>
+                                <input type="number" id="salePrice" class="form-control" placeholder="0" min="0" inputmode="numeric">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">To'langan summa (so'm)</label>
+                                <input type="number" id="salePaid" class="form-control" placeholder="0" min="0" inputmode="numeric">
+                                <small style="color: #666;">Agar to'liq to'lanmagan bo'lsa, qarzga yoziladi</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Izoh</label>
+                                <textarea id="saleNote" class="form-control" placeholder="Qo'shimcha izohlar..."></textarea>
+                            </div>
+                            
+                            <div class="card" style="margin-top: 20px; background-color: #f9f9f9;">
+                                <h4 class="card-title"><i class="fas fa-calculator"></i> Sotuv hisoboti</h4>
+                                <div style="padding: 15px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <span>Jami miqdor:</span>
+                                        <strong id="saleTotalQuantity">0 dona</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <span>Jami summa:</span>
+                                        <strong id="saleTotalAmount">0 so'm</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <span>To'langan:</span>
+                                        <strong id="saleTotalPaid">0 so'm</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+                                        <span>Qarz qoldig'i:</span>
+                                        <strong id="saleTotalDebt" style="color: var(--danger);">0 so'm</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #ddd;">
+                                        <span>Taxminiy foyda:</span>
+                                        <strong id="saleEstimatedProfit" style="color: var(--success);">0 so'm</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button id="addSaleBtn" class="btn btn-success" style="margin-top: 20px;">
+                                <i class="fas fa-check"></i> Sotuvni saqlash
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="salesHistory" class="tab-content">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-history"></i> Sotuv tarixi</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sana</th>
+                                            <th>Mijoz</th>
+                                            <th>Halat turi</th>
+                                            <th>Miqdori</th>
+                                            <th>Jami summa</th>
+                                            <th>To'langan</th>
+                                            <th>Qarz</th>
+                                            <th>O'chirish</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesHistoryBody">
+                                        <!-- Sotuv tarixi bu yerda ko'rsatiladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="salesHistoryEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-shopping-cart"></i>
+                                <h3>Sotuvlar mavjud emas</h3>
+                                <p>Hozircha mijozlarga sotuv amalga oshirilmagan</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="clients" class="tab-content">
+                        <div class="tabs">
+                            <button class="tab-btn active" data-tab="addClientTab">Yangi mijoz</button>
+                            <button class="tab-btn" data-tab="clientsListTab">Mijozlar ro'yxati</button>
+                        </div>
+                        
+                        <div id="addClientTab" class="tab-content active">
+                            <div class="card">
+                                <h3 class="card-title"><i class="fas fa-user-plus"></i> Yangi mijoz</h3>
+                                <div class="form-group">
+                                    <label class="form-label">Mijoz nomi *</label>
+                                    <input type="text" id="newClientName" class="form-control" placeholder="To'liq ism">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Telefon raqami</label>
+                                    <input type="tel" id="newClientPhone" class="form-control" placeholder="+998901234567" inputmode="tel">
+                                </div>
+                                <button id="saveNewClientBtn" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Mijozni saqlash
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="clientsListTab" class="tab-content">
+                            <div class="card">
+                                <h3 class="card-title"><i class="fas fa-users"></i> Mijozlar ro'yxati</h3>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nomi</th>
+                                                <th>Telefon</th>
+                                                <th>Qarz</th>
+                                                <th>Tahrir/O'chirish</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="clientsList">
+                                            <!-- Mijozlar ro'yxati bu yerda ko'rsatiladi -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="clientsListEmpty" class="empty-state" style="display: none;">
+                                    <i class="fas fa-users"></i>
+                                    <h3>Mijozlar mavjud emas</h3>
+                                    <p>Yangi mijoz qo'shish uchun "Yangi mijoz" tabiga o'ting</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Qaytish/Brak -->
+            <div id="returnsPage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-exchange-alt"></i> Qaytish va Brak boshqaruvi</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="returnProduct">Mahsulot qaytarish</button>
+                        <button class="tab-btn" data-tab="defectProduct">Brak mahsulot</button>
+                        <button class="tab-btn" data-tab="returnsHistory">Qaytish tarixi</button>
+                    </div>
+                    
+                    <div id="returnProduct" class="tab-content active">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-undo"></i> Sotuvdan qaytarish</h3>
+                            <div class="form-group">
+                                <label class="form-label">Sotuv *</label>
+                                <select id="returnSaleId" class="form-control">
+                                    <option value="">Sotuvni tanlang</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Qaytarilayotgan miqdor (dona) *</label>
+                                <input type="number" id="returnQuantity" class="form-control" placeholder="0" min="1" inputmode="numeric">
+                                <small style="color: #666;">Maksimal: <span id="maxReturnQuantity">0 dona</span></small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sabab *</label>
+                                <select id="returnReason" class="form-control">
+                                    <option value="">Sababni tanlang</option>
+                                    <option value="sizdirmaydi">Sizdirmaydi</option>
+                                    <option value="rang o'chdi">Rang o'chdi</option>
+                                    <option value="o'lcham mos emas">O'lcham mos emas</option>
+                                    <option value="boshqa">Boshqa sabab</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Qo'shimcha izoh</label>
+                                <textarea id="returnNote" class="form-control" placeholder="Qaytarish sababi..."></textarea>
+                            </div>
+                            
+                            <div class="card" style="margin-top: 20px; background-color: #f9f9f9;">
+                                <h4 class="card-title"><i class="fas fa-info-circle"></i> Sotuv ma'lumotlari</h4>
+                                <div id="returnSaleInfo" style="padding: 15px;">
+                                    <p>Mijoz: <strong id="returnClientName">-</strong></p>
+                                    <p>Halat turi: <strong id="returnProductTypeInfo">-</strong></p>
+                                    <p>Miqdori: <strong id="returnSaleQuantity">0 dona</strong></p>
+                                    <p>Narxi: <strong id="returnSalePrice">0 so'm</strong></p>
+                                </div>
+                            </div>
+                            
+                            <button id="processReturnBtn" class="btn btn-warning" style="margin-top: 20px;">
+                                <i class="fas fa-undo"></i> Qaytarishni amalga oshirish
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="defectProduct" class="tab-content">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Brak mahsulot</h3>
+                            <div class="form-group">
+                                <label class="form-label">Sex *</label>
+                                <select id="defectWorkshop" class="form-control">
+                                    <option value="">Sexni tanlang</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Halat turi *</label>
+                                <input type="text" id="defectProductType" class="form-control" placeholder="Masalan: Oddiy, Gilam, Baxmal">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Brak miqdori (dona) *</label>
+                                <input type="number" id="defectQuantity" class="form-control" placeholder="0" min="1" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Brak sababi *</label>
+                                <select id="defectReason" class="form-control">
+                                    <option value="">Sababni tanlang</option>
+                                    <option value="tugun">Tugun</option>
+                                    <option value="chandiq">Chandiq</option>
+                                    <option value="tish">Tish</option>
+                                    <option value="rang noto'g'ri">Rang noto'g'ri</option>
+                                    <option value="boshqa">Boshqa sabab</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Izoh</label>
+                                <textarea id="defectNote" class="form-control" placeholder="Brak haqida qo'shimcha ma'lumot..."></textarea>
+                            </div>
+                            <button id="processDefectBtn" class="btn btn-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Brakni ro'yxatga olish
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="returnsHistory" class="tab-content">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-history"></i> Qaytish tarixi</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sana</th>
+                                            <th>Turi</th>
+                                            <th>Mijoz/Sex</th>
+                                            <th>Halat turi</th>
+                                            <th>Miqdori</th>
+                                            <th>Sabab</th>
+                                            <th>O'chirish</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="returnsHistoryBody">
+                                        <!-- Qaytish tarixi bu yerda ko'rsatiladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="returnsHistoryEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-exchange-alt"></i>
+                                <h3>Qaytishlar mavjud emas</h3>
+                                <p>Hozircha qaytarish yoki brak mahsulotlar mavjud emas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Qarzlar -->
+            <div id="debtsPage" class="page-content" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Qarzlar hisobi</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="workshopDebts">Sexlar qarzi</button>
+                        <button class="tab-btn" data-tab="clientDebts">Mijozlar qarzi</button>
+                        <button class="tab-btn" data-tab="debtPayments">Qarz to'lovlari</button>
+                    </div>
+                    
+                    <div id="workshopDebts" class="tab-content active">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-industry"></i> Sexlar qarzi</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sex nomi</th>
+                                            <th>Jami olingan</th>
+                                            <th>Jami to'langan</th>
+                                            <th>Brak chegirmalari</th>
+                                            <th>Qarz qoldig'i</th>
+                                            <th>To'lash</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="workshopDebtsBody">
+                                        <!-- Sexlar qarzlari bu yerda ko'rsatiladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="workshopDebtsEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-industry"></i>
+                                <h3>Sexlar qarzi mavjud emas</h3>
+                                <p>Hozircha sexlarning qarzlari mavjud emas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="clientDebts" class="tab-content">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-users"></i> Mijozlar qarzi</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Mijoz</th>
+                                            <th>Jami olgan</th>
+                                            <th>Jami to'lagan</th>
+                                            <th>Qaytgan mahsulot</th>
+                                            <th>Qarz qoldig'i</th>
+                                            <th>To'lash</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="clientDebtsBody">
+                                        <!-- Mijozlar qarzlari bu yerda ko'rsatiladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="clientDebtsEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-users"></i>
+                                <h3>Mijozlar qarzi mavjud emas</h3>
+                                <p>Hozircha mijozlarning qarzlari mavjud emas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="debtPayments" class="tab-content">
+                        <div class="tabs">
+                            <button class="tab-btn active" data-tab="addPaymentTab">To'lov qilish</button>
+                            <button class="tab-btn" data-tab="paymentsHistoryTab">To'lovlar tarixi</button>
+                        </div>
+                        
+                        <div id="addPaymentTab" class="tab-content active">
+                            <div class="card">
+                                <h3 class="card-title"><i class="fas fa-money-bill-wave"></i> Qarz to'lash</h3>
+                                <div class="form-group">
+                                    <label class="form-label">To'lov turi *</label>
+                                    <select id="paymentType" class="form-control">
+                                        <option value="">To'lov turini tanlang</option>
+                                        <option value="workshop">Sexga to'lov</option>
+                                        <option value="client">Mijozdan to'lov</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="paymentWorkshopGroup">
+                                    <label class="form-label">Sex *</label>
+                                    <select id="paymentWorkshop" class="form-control">
+                                        <option value="">Sexni tanlang</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="paymentClientGroup" style="display: none;">
+                                    <label class="form-label">Mijoz *</label>
+                                    <select id="paymentClient" class="form-control">
+                                        <option value="">Mijozni tanlang</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">To'lov summasi (so'm) *</label>
+                                    <input type="number" id="paymentAmount" class="form-control" placeholder="0" min="1" inputmode="numeric">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">To'lov sanasi *</label>
+                                    <input type="date" id="paymentDate" class="form-control" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Izoh</label>
+                                    <input type="text" id="paymentNote" class="form-control" placeholder="To'lov haqida izoh">
+                                </div>
+                                <button id="processPaymentBtn" class="btn btn-success">
+                                    <i class="fas fa-check"></i> To'lovni saqlash
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="paymentsHistoryTab" class="tab-content">
+                            <div class="card">
+                                <h3 class="card-title"><i class="fas fa-history"></i> To'lovlar tarixi</h3>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Sana</th>
+                                                <th>Kimdan/Kimga</th>
+                                                <th>Summa</th>
+                                                <th>Izoh</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="paymentsHistory">
+                                            <!-- To'lovlar tarixi bu yerda ko'rsatiladi -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="paymentsHistoryEmpty" class="empty-state" style="display: none;">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <h3>To'lovlar mavjud emas</h3>
+                                    <p>Hozircha qarz to'lovlari amalga oshirilmagan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PDF yuklab olish tugmasi -->
+        <button id="pdfDownloadBtn" class="btn btn-danger pdf-btn" style="display: none;">
+            <i class="fas fa-file-pdf"></i>
+        </button>
+    </div>
+    
+    <!-- Modal oynalar -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="messageModalTitle">Xabar</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div id="messageModalBody" style="padding: 20px 0;">
+                <!-- Xabar matni bu yerda ko'rsatiladi -->
+            </div>
+            <div style="text-align: right; padding-top: 20px; border-top: 1px solid var(--light);">
+                <button id="closeMessageModal" class="btn btn-primary">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Asosiy o'zgaruvchilar
+        let currentUser = null;
+        let currentUserType = null; // 'admin' yoki 'client'
+        let currentPage = 'dashboard';
+        
+        // Ma'lumotlar bazasi (localStorage)
+        const DB = {
+            // Saqlash funksiyalari
+            save: function(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                    return true;
+                } catch (e) {
+                    console.error('Saqlashda xatolik:', e);
+                    return false;
+                }
+            },
+            
+            // O'qish funksiyalari
+            load: function(key) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : null;
+                } catch (e) {
+                    console.error('O\'qishda xatolik:', e);
+                    return null;
+                }
+            },
+            
+            // Barcha kalitlarni olish
+            getAllKeys: function() {
+                const keys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    keys.push(localStorage.key(i));
+                }
+                return keys;
+            },
+            
+            // Ma'lumotni o'chirish
+            remove: function(key) {
+                localStorage.removeItem(key);
+            },
+            
+            // Barcha ma'lumotlarni tozalash
+            clear: function() {
+                localStorage.clear();
+            }
+        };
+        
+        // Dastur ma'lumotlarini saqlash strukturasini yaratish
+        const initializeData = function() {
+            // Agar birinchi marta ishga tushirilsa, BO'SH ma'lumotlarni yaratish
+            if (!DB.load('app_initialized')) {
+                console.log('Dastur birinchi marta ishga tushirildi, bo\'sh ma\'lumotlar yaratilmoqda...');
+                
+                // Faqat bo'sh massivlar yaratish
+                DB.save('workshops', []);
+                DB.save('clients', []);
+                DB.save('storage', []);
+                DB.save('incomes', []);
+                DB.save('sales', []);
+                DB.save('returns', []);
+                DB.save('defects', []);
+                DB.save('payments', []);
+                DB.save('activities', []);
+                
+                // Dastur ishga tushirilganligini belgilash
+                DB.save('app_initialized', true);
+                
+                console.log('Bo\'sh ma\'lumotlar yaratildi. Endi siz o\'zingiz ma\'lumot kiritasiz.');
+            }
+        };
+        
+        // Tasodifiy mijoz ID yaratish
+        const generateClientId = function() {
+            let id;
+            const clients = DB.load('clients') || [];
+            const existingIds = clients.map(c => c.id);
+            
+            do {
+                id = Math.floor(100000 + Math.random() * 900000); // 100000-999999 orasida
+            } while (existingIds.includes(id));
+            
+            return id;
+        };
+        
+        // Sana formatlash
+        const formatDate = function(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('uz-UZ', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        };
+        
+        // Vaqt formatlash
+        const formatTime = function(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('uz-UZ', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+        
+        // Raqam formatlash (3 xonali guruhlar)
+        const formatNumber = function(num) {
+            if (!num && num !== 0) return '0';
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        };
+        
+        // Modal oynani ko'rsatish
+        const showModal = function(title, message, isError = false) {
+            document.getElementById('messageModalTitle').textContent = title;
+            document.getElementById('messageModalBody').innerHTML = `<p>${message}</p>`;
+            document.getElementById('messageModal').style.display = 'flex';
+            
+            if (isError) {
+                document.getElementById('messageModalTitle').style.color = 'var(--danger)';
+            } else {
+                document.getElementById('messageModalTitle').style.color = 'var(--primary)';
+            }
+        };
+        
+        // Xabarni ko'rsatish
+        const showMessage = function(message, type = 'success') {
+            showModal(type === 'error' ? 'Xatolik' : 'Muvaffaqiyat', message, type === 'error');
+        };
+        
+        // Aktivlik qo'shish
+        const addActivity = function(type, details) {
+            const activities = DB.load('activities') || [];
+            activities.unshift({
+                id: Date.now(),
+                type: type,
+                details: details,
+                timestamp: new Date().toISOString(),
+                user: currentUserType === 'admin' ? 'Admin' : (currentUser ? currentUser.name : 'Noma\'lum')
+            });
+            
+            // Faqat oxirgi 50 ta aktivlikni saqlash
+            if (activities.length > 50) {
+                activities.length = 50;
+            }
+            
+            DB.save('activities', activities);
+            updateRecentActivities();
+        };
+        
+        // Bo'sh holatni ko'rsatish
+        const checkEmptyState = function(elementId, dataArray) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            if (dataArray.length === 0) {
+                element.style.display = 'block';
+            } else {
+                element.style.display = 'none';
+            }
+        };
+        
+        // So'nggi aktivliklarni yangilash
+        const updateRecentActivities = function() {
+            const activities = DB.load('activities') || [];
+            const tbody = document.getElementById('recentActivities');
+            
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Bo'sh holatni tekshirish
+            checkEmptyState('activitiesEmpty', activities);
+            
+            // Faqat oxirgi 5 ta aktivlikni ko'rsatish
+            const recentActivities = activities.slice(0, 5);
+            
+            recentActivities.forEach(activity => {
+                const row = document.createElement('tr');
+                
+                let typeText = '';
+                let icon = '';
+                
+                switch(activity.type) {
+                    case 'income':
+                        typeText = 'Kirim';
+                        icon = '<i class="fas fa-arrow-right text-primary"></i>';
+                        break;
+                    case 'sale':
+                        typeText = 'Sotuv';
+                        icon = '<i class="fas fa-shopping-cart text-success"></i>';
+                        break;
+                    case 'return':
+                        typeText = 'Qaytish';
+                        icon = '<i class="fas fa-undo text-warning"></i>';
+                        break;
+                    case 'defect':
+                        typeText = 'Brak';
+                        icon = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+                        break;
+                    case 'payment':
+                        typeText = 'To\'lov';
+                        icon = '<i class="fas fa-money-bill-wave text-success"></i>';
+                        break;
+                    default:
+                        typeText = 'Boshqa';
+                        icon = '<i class="fas fa-info-circle text-secondary"></i>';
+                }
+                
+                row.innerHTML = `
+                    <td>${formatDate(activity.timestamp)}</td>
+                    <td>${icon} ${typeText}</td>
+                    <td>${activity.details.substring(0, 30)}${activity.details.length > 30 ? '...' : ''}</td>
+                    <td>${activity.user}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        };
+        
+        // Sahifani yangilash
+        const updatePage = function(pageId) {
+            // Barcha sahifalarni yashirish
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // Faqat tanlangan sahifani ko'rsatish
+            const pageElement = document.getElementById(pageId + 'Page');
+            if (pageElement) {
+                pageElement.style.display = 'block';
+            }
+            
+            // Navigatsiya tugmalarini yangilash
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Agar sahifa navigatsiyada bo'lsa, uning tugmasini faollashtirish
+            const navBtn = document.querySelector(`.nav-btn[data-page="${pageId}"]`);
+            if (navBtn) {
+                navBtn.classList.add('active');
+            }
+            
+            // Sahifa ma'lumotlarini yangilash
+            switch(pageId) {
+                case 'dashboard':
+                    updateDashboard();
+                    break;
+                case 'workshops':
+                    updateWorkshops();
+                    break;
+                case 'storage':
+                    updateStorage();
+                    break;
+                case 'income':
+                    updateIncomePage();
+                    break;
+                case 'sales':
+                    updateSalesPage();
+                    break;
+                case 'returns':
+                    updateReturnsPage();
+                    break;
+                case 'debts':
+                    updateDebtsPage();
+                    break;
+            }
+            
+            currentPage = pageId;
+            
+            // Mobil uchun scrollni tepaga chiqarish
+            window.scrollTo(0, 0);
+        };
+        
+        // Boshqaruv panelini yangilash
+        const updateDashboard = function() {
+            // Umumiy statistikalar
+            const storage = DB.load('storage') || [];
+            const sales = DB.load('sales') || [];
+            const incomes = DB.load('incomes') || [];
+            const defects = DB.load('defects') || [];
+            const workshops = DB.load('workshops') || [];
+            const clients = DB.load('clients') || [];
+            
+            // Ombor qoldig'i
+            let totalProducts = 0;
+            storage.forEach(item => {
+                totalProducts += item.current_balance || 0;
+            });
+            document.getElementById('totalProducts').textContent = formatNumber(totalProducts);
+            
+            // Jami foyda
+            let totalProfit = 0;
+            sales.forEach(sale => {
+                // Har bir sotuv uchun foydani hisoblash (sotish narxi - o'rtacha kirim narxi)
+                const storageItem = storage.find(item => item.key === sale.storage_key);
+                const avgCost = storageItem ? storageItem.avg_price : 0;
+                const salePrice = sale.price_per_unit || 0;
+                const quantity = sale.quantity || 0;
+                
+                totalProfit += (salePrice - avgCost) * quantity;
+            });
+            document.getElementById('totalProfit').textContent = formatNumber(Math.round(totalProfit)) + ' so\'m';
+            
+            // Jami qarzlar
+            let totalDebts = 0;
+            workshops.forEach(workshop => {
+                totalDebts += workshop.debt || 0;
+            });
+            clients.forEach(client => {
+                totalDebts += client.debt || 0;
+            });
+            document.getElementById('totalDebts').textContent = formatNumber(Math.round(totalDebts)) + ' so\'m';
+            
+            // Jami brak
+            let totalDefects = 0;
+            defects.forEach(defect => {
+                totalDefects += defect.quantity || 0;
+            });
+            document.getElementById('totalDefects').textContent = formatNumber(totalDefects);
+            
+            // Bugungi hisobot
+            const today = new Date().toISOString().split('T')[0];
+            
+            let todayIncome = 0;
+            incomes.filter(income => income.date === today).forEach(income => {
+                todayIncome += income.quantity || 0;
+            });
+            document.getElementById('todayIncome').textContent = formatNumber(todayIncome) + ' dona';
+            
+            let todaySales = 0;
+            sales.filter(sale => sale.date === today).forEach(sale => {
+                todaySales += sale.quantity || 0;
+            });
+            document.getElementById('todaySales').textContent = formatNumber(todaySales) + ' dona';
+            
+            let todayProfit = 0;
+            sales.filter(sale => sale.date === today).forEach(sale => {
+                const storageItem = storage.find(item => item.key === sale.storage_key);
+                const avgCost = storageItem ? storageItem.avg_price : 0;
+                const salePrice = sale.price_per_unit || 0;
+                const quantity = sale.quantity || 0;
+                
+                todayProfit += (salePrice - avgCost) * quantity;
+            });
+            document.getElementById('todayProfit').textContent = formatNumber(Math.round(todayProfit)) + ' so`m';
+            
+            let todayDefects = 0;
+            defects.filter(defect => defect.date === today).forEach(defect => {
+                todayDefects += defect.quantity || 0;
+            });
+            document.getElementById('todayDefects').textContent = formatNumber(todayDefects) + ' dona';
+            
+            // So'nggi aktivliklar
+            updateRecentActivities();
+        };
+        
+        // Sexlar sahifasini yangilash
+        const updateWorkshops = function() {
+            const workshops = DB.load('workshops') || [];
+            const tbody = document.getElementById('workshopsList');
+            
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Bo'sh holatni tekshirish
+            checkEmptyState('workshopsEmpty', workshops);
+            
+            workshops.forEach((workshop, index) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${workshop.name}</td>
+                    <td>${workshop.phone || ''}</td>
+                    <td>${formatNumber(Math.round(workshop.debt || 0))} so'm</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editWorkshop(${workshop.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteWorkshop(${workshop.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Kirim va to'lov sahifalari uchun sexlar ro'yxatini yangilash
+            updateWorkshopsSelectOptions();
+        };
+        
+        // Sexlar ro'yxatini select elementlariga qo'shish
+        const updateWorkshopsSelectOptions = function() {
+            const workshops = DB.load('workshops') || [];
+            
+            // Kirim sahifasi uchun
+            const incomeWorkshopSelect = document.getElementById('incomeWorkshop');
+            if (incomeWorkshopSelect) {
+                incomeWorkshopSelect.innerHTML = '<option value="">Sexni tanlang</option>';
+                workshops.forEach(workshop => {
+                    const option = document.createElement('option');
+                    option.value = workshop.id;
+                    option.textContent = workshop.name;
+                    incomeWorkshopSelect.appendChild(option);
+                });
+            }
+            
+            // Brak sahifasi uchun
+            const defectWorkshopSelect = document.getElementById('defectWorkshop');
+            if (defectWorkshopSelect) {
+                defectWorkshopSelect.innerHTML = '<option value="">Sexni tanlang</option>';
+                workshops.forEach(workshop => {
+                    const option = document.createElement('option');
+                    option.value = workshop.id;
+                    option.textContent = workshop.name;
+                    defectWorkshopSelect.appendChild(option);
+                });
+            }
+            
+            // To'lov sahifasi uchun
+            const paymentWorkshopSelect = document.getElementById('paymentWorkshop');
+            if (paymentWorkshopSelect) {
+                paymentWorkshopSelect.innerHTML = '<option value="">Sexni tanlang</option>';
+                workshops.forEach(workshop => {
+                    const option = document.createElement('option');
+                    option.value = workshop.id;
+                    option.textContent = workshop.name;
+                    paymentWorkshopSelect.appendChild(option);
+                });
+            }
+        };
+        
+        // Ombor sahifasini yangilash
+        const updateStorage = function() {
+            const storage = DB.load('storage') || [];
+            const summaryBody = document.getElementById('storageSummaryBody');
+            
+            if (summaryBody) {
+                summaryBody.innerHTML = '';
+                
+                // Bo'sh holatni tekshirish
+                checkEmptyState('storageSummaryEmpty', storage);
+                
+                storage.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${item.workshop_name} - ${item.product_type}</td>
+                        <td>${formatNumber(item.total_in || 0)} dona</td>
+                        <td>${formatNumber(item.total_out || 0)} dona</td>
+                        <td>${formatNumber(item.defects || 0)} dona</td>
+                        <td>${formatNumber(item.current_balance || 0)} dona</td>
+                        <td>${formatNumber(Math.round(item.avg_price || 0))} so'm</td>
+                    `;
+                    
+                    summaryBody.appendChild(row);
+                });
+            }
+            
+            // Sotuv sahifasi uchun mahsulot turlarini yangilash
+            updateProductTypesForSales();
+        };
+        
+        // Sotuv sahifasi uchun mahsulot turlarini yangilash
+        const updateProductTypesForSales = function() {
+            const storage = DB.load('storage') || [];
+            const productSelect = document.getElementById('saleProductType');
+            
+            if (!productSelect) return;
+            
+            productSelect.innerHTML = '<option value="">Halat turini tanlang</option>';
+            
+            storage.forEach(item => {
+                if (item.current_balance > 0) {
+                    const option = document.createElement('option');
+                    option.value = item.key;
+                    option.textContent = `${item.workshop_name} - ${item.product_type} (qoldiq: ${item.current_balance} dona)`;
+                    option.setAttribute('data-workshop-id', item.workshop_id);
+                    option.setAttribute('data-workshop-name', item.workshop_name);
+                    option.setAttribute('data-product-type', item.product_type);
+                    productSelect.appendChild(option);
+                }
+            });
+        };
+        
+        // Kirim sahifasini yangilash
+        const updateIncomePage = function() {
+            // Sexlar ro'yxatini to'ldirish (avvalroq updateWorkshopsSelectOptions tomonidan bajariladi)
+            
+            // Sana maydonini bugungi sana bilan to'ldirish
+            const today = new Date().toISOString().split('T')[0];
+            const incomeDate = document.getElementById('incomeDate');
+            if (incomeDate && !incomeDate.value) {
+                incomeDate.value = today;
+            }
+            
+            // Kirimlar tarixini yangilash
+            const incomes = DB.load('incomes') || [];
+            const tbody = document.getElementById('incomeHistory');
+            
+            if (tbody) {
+                tbody.innerHTML = '';
+                
+                // Bo'sh holatni tekshirish
+                checkEmptyState('incomeHistoryEmpty', incomes);
+                
+                // Oxirgi 10 ta kirimni ko'rsatish
+                const recentIncomes = incomes.slice(-10).reverse();
+                
+                recentIncomes.forEach(income => {
+                    const row = document.createElement('tr');
+                    
+                    // Sex nomini topish
+                    const workshops = DB.load('workshops') || [];
+                    const workshop = workshops.find(w => w.id == income.workshop_id);
+                    const workshopName = workshop ? workshop.name : 'Noma\'lum';
+                    
+                    // Qarzni hisoblash
+                    const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
+                    const paid = income.paid || 0;
+                    const debt = totalAmount - paid;
+                    
+                    row.innerHTML = `
+                        <td>${formatDate(income.date)}</td>
+                        <td>${workshopName}</td>
+                        <td>${income.product_type}</td>
+                        <td>${formatNumber(income.quantity)} dona</td>
+                        <td>${formatNumber(Math.round(paid))} so'm</td>
+                        <td>${debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(debt)) + ' so\'m</span>' : '<span class="badge badge-success">To\'langan</span>'}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteIncome(${income.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+        };
+        
+        // Sotuv sahifasini yangilash
+        const updateSalesPage = function() {
+            // Mijozlar ro'yxatini to'ldirish
+            const clients = DB.load('clients') || [];
+            const clientSelect = document.getElementById('saleClient');
+            
+            if (clientSelect) {
+                clientSelect.innerHTML = '<option value="">Mijozni tanlang</option>';
+                clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = `${client.name}${client.phone ? ' (' + client.phone + ')' : ''}`;
+                    clientSelect.appendChild(option);
+                });
+            }
+            
+            // Ombor mahsulotlari ro'yxatini to'ldirish (avvalroq updateProductTypesForSales tomonidan bajariladi)
+            
+            // Sana maydonini bugungi sana bilan to'ldirish
+            const today = new Date().toISOString().split('T')[0];
+            const saleDate = document.getElementById('saleDate');
+            if (saleDate && !saleDate.value) {
+                saleDate.value = today;
+            }
+            
+            // Mijozlar ro'yxatini yangilash
+            updateClientsList();
+            
+            // Sotuv tarixini yangilash
+            updateSalesHistory();
+        };
+        
+        // Mijozlar ro'yxatini yangilash
+        const updateClientsList = function() {
+            const clients = DB.load('clients') || [];
+            const tbody = document.getElementById('clientsList');
+            
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Bo'sh holatni tekshirish
+            checkEmptyState('clientsListEmpty', clients);
+            
+            clients.forEach(client => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${client.id}</td>
+                    <td>${client.name}</td>
+                    <td>${client.phone || ''}</td>
+                    <td>${client.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(client.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editClient(${client.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteClient(${client.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // To'lov sahifasi uchun mijozlar ro'yxatini yangilash
+            updateClientsForPayments();
+        };
+        
+        // To'lov sahifasi uchun mijozlar ro'yxatini yangilash
+        const updateClientsForPayments = function() {
+            const clients = DB.load('clients') || [];
+            const paymentClientSelect = document.getElementById('paymentClient');
+            
+            if (!paymentClientSelect) return;
+            
+            paymentClientSelect.innerHTML = '<option value="">Mijozni tanlang</option>';
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = client.name;
+                paymentClientSelect.appendChild(option);
+            });
+        };
+        
+        // Sotuv tarixini yangilash
+        const updateSalesHistory = function() {
+            const sales = DB.load('sales') || [];
+            const tbody = document.getElementById('salesHistoryBody');
+            
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Bo'sh holatni tekshirish
+            checkEmptyState('salesHistoryEmpty', sales);
+            
+            sales.forEach(sale => {
+                const row = document.createElement('tr');
+                
+                const totalAmount = (sale.price_per_unit || 0) * (sale.quantity || 0);
+                const paid = sale.paid || 0;
+                const debt = totalAmount - paid;
+                
+                row.innerHTML = `
+                    <td>${formatDate(sale.date)}</td>
+                    <td>${sale.client_name}</td>
+                    <td>${sale.product_type}</td>
+                    <td>${formatNumber(sale.quantity)} dona</td>
+                    <td>${formatNumber(Math.round(totalAmount))} so'm</td>
+                    <td>${formatNumber(Math.round(paid))} so'm</td>
+                    <td>${debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(debt)) + ' so\'m</span>' : '<span class="badge badge-success">To\'langan</span>'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSale(${sale.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Qaytish sahifasi uchun sotuvlar ro'yxatini yangilash
+            updateSalesForReturns();
+        };
+        
+        // Qaytish sahifasi uchun sotuvlar ro'yxatini yangilash
+        const updateSalesForReturns = function() {
+            const sales = DB.load('sales') || [];
+            const returnSaleSelect = document.getElementById('returnSaleId');
+            
+            if (!returnSaleSelect) return;
+            
+            returnSaleSelect.innerHTML = '<option value="">Sotuvni tanlang</option>';
+            sales.forEach(sale => {
+                // Faqat to'liq to'lanmagan sotuvlarni ko'rsatish
+                const totalAmount = (sale.price_per_unit || 0) * (sale.quantity || 0);
+                const paid = sale.paid || 0;
+                
+                if (totalAmount > paid) {
+                    const option = document.createElement('option');
+                    option.value = sale.id;
+                    option.textContent = `${sale.client_name} - ${sale.product_type} - ${sale.quantity} dona`;
+                    returnSaleSelect.appendChild(option);
+                }
+            });
+        };
+        
+        // Qaytish sahifasini yangilash
+        const updateReturnsPage = function() {
+            // Sotuvlar ro'yxatini to'ldirish (avvalroq updateSalesForReturns tomonidan bajariladi)
+            // Sexlar ro'yxatini to'ldirish (avvalroq updateWorkshopsSelectOptions tomonidan bajariladi)
+            
+            // Qaytish tarixini yangilash
+            const returns = DB.load('returns') || [];
+            const returnsTbody = document.getElementById('returnsHistoryBody');
+            
+            if (returnsTbody) {
+                returnsTbody.innerHTML = '';
+                
+                // Bo'sh holatni tekshirish
+                checkEmptyState('returnsHistoryEmpty', returns);
+                
+                returns.forEach(ret => {
+                    const row = document.createElement('tr');
+                    
+                    let typeText = '';
+                    let clientOrWorkshop = '';
+                    
+                    if (ret.type === 'return') {
+                        typeText = 'Qaytarish';
+                        clientOrWorkshop = ret.client_name || 'Noma\'lum mijoz';
+                    } else {
+                        typeText = 'Brak';
+                        const workshops = DB.load('workshops') || [];
+                        const workshop = workshops.find(w => w.id == ret.workshop_id);
+                        clientOrWorkshop = workshop ? workshop.name : 'Noma\'lum sex';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${formatDate(ret.date)}</td>
+                        <td>${typeText}</td>
+                        <td>${clientOrWorkshop}</td>
+                        <td>${ret.product_type}</td>
+                        <td>${ret.quantity} dona</td>
+                        <td>${ret.reason}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteReturn(${ret.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    returnsTbody.appendChild(row);
+                });
+            }
+        };
+        
+        // Qarzlar sahifasini yangilash
+        const updateDebtsPage = function() {
+            // Sexlar qarzlarini yangilash
+            const workshops = DB.load('workshops') || [];
+            const workshopDebtsBody = document.getElementById('workshopDebtsBody');
+            
+            if (workshopDebtsBody) {
+                workshopDebtsBody.innerHTML = '';
+                
+                // Bo'sh holatni tekshirish
+                checkEmptyState('workshopDebtsEmpty', workshops);
+                
+                workshops.forEach(workshop => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${workshop.name}</td>
+                        <td>${formatNumber(Math.round(workshop.total_purchased || 0))} so'm</td>
+                        <td>${formatNumber(Math.round(workshop.total_paid || 0))} so'm</td>
+                        <td>${formatNumber(Math.round(workshop.defect_deductions || 0))} so'm</td>
+                        <td>${workshop.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(workshop.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="payWorkshopDebt(${workshop.id})" ${workshop.debt <= 0 ? 'disabled' : ''}>
+                                <i class="fas fa-money-bill-wave"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    workshopDebtsBody.appendChild(row);
+                });
+            }
+            
+            // Mijozlar qarzlarini yangilash
+            const clients = DB.load('clients') || [];
+            const clientDebtsBody = document.getElementById('clientDebtsBody');
+            
+            if (clientDebtsBody) {
+                clientDebtsBody.innerHTML = '';
+                
+                // Bo'sh holatni tekshirish
+                checkEmptyState('clientDebtsEmpty', clients);
+                
+                clients.forEach(client => {
+                    // Qaytgan mahsulotlar miqdorini hisoblash
+                    const returns = DB.load('returns') || [];
+                    const clientReturns = returns.filter(r => r.client_id == client.id && r.type === 'return');
+                    let returnedQuantity = 0;
+                    clientReturns.forEach(ret => {
+                        returnedQuantity += ret.quantity || 0;
+                    });
+                    
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${client.name}</td>
+                        <td>${formatNumber(Math.round(client.total_purchased || 0))} so'm</td>
+                        <td>${formatNumber(Math.round(client.total_paid || 0))} so'm</td>
+                        <td>${formatNumber(returnedQuantity)} dona</td>
+                        <td>${client.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(client.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="payClientDebt(${client.id})" ${client.debt <= 0 ? 'disabled' : ''}>
+                                <i class="fas fa-money-bill-wave"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    clientDebtsBody.appendChild(row);
+                });
+            }
+            
+            // To'lovlar tarixini yangilash
+            const payments = DB.load('payments') || [];
+            const paymentsTbody = document.getElementById('paymentsHistory');
+            
+            if (paymentsTbody) {
+                paymentsTbody.innerHTML = '';
+                
+                // Bo'sh holatni tekshirish
+                checkEmptyState('paymentsHistoryEmpty', payments);
+                
+                // Oxirgi 10 ta to'lovni ko'rsatish
+                const recentPayments = payments.slice(-10).reverse();
+                
+                recentPayments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    
+                    let fromTo = '';
+                    
+                    if (payment.type === 'workshop') {
+                        const workshops = DB.load('workshops') || [];
+                        const workshop = workshops.find(w => w.id == payment.workshop_id);
+                        fromTo = workshop ? workshop.name : 'Noma\'lum sex';
+                    } else {
+                        const clients = DB.load('clients') || [];
+                        const client = clients.find(c => c.id == payment.client_id);
+                        fromTo = client ? client.name : 'Noma\'lum mijoz';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${formatDate(payment.date)}</td>
+                        <td>${fromTo}</td>
+                        <td>${formatNumber(Math.round(payment.amount))} so'm</td>
+                        <td>${payment.note || ''}</td>
+                    `;
+                    
+                    paymentsTbody.appendChild(row);
+                });
+            }
+            
+            // To'lov shakli elementlarini to'ldirish (sexlar va mijozlar ro'yxatlari avvalroq yangilangan)
+            
+            // Sana maydonini bugungi sana bilan to'ldirish
+            const today = new Date().toISOString().split('T')[0];
+            const paymentDate = document.getElementById('paymentDate');
+            if (paymentDate && !paymentDate.value) {
+                paymentDate.value = today;
+            }
+        };
+        
+        // Mijoz sahifasini yangilash
+        const updateClientPage = function() {
+            if (!currentUser) return;
+            
+            // Mijoz ma'lumotlarini ko'rsatish
+            document.getElementById('clientIdDisplay').textContent = currentUser.id;
+            document.getElementById('clientNameDisplay').textContent = currentUser.name;
+            
+            document.getElementById('clientIdDisplay2').textContent = currentUser.id;
+            document.getElementById('clientNameDisplay2').textContent = currentUser.name;
+            
+            // Statistikalar
+            document.getElementById('clientTotalProducts').textContent = formatNumber(currentUser.total_purchased_quantity || 0) + ' dona';
+            document.getElementById('clientTotalDebt').textContent = formatNumber(Math.round(currentUser.debt || 0)) + ' so\'m';
+            
+            document.getElementById('clientTotalProducts2').textContent = formatNumber(currentUser.total_purchased_quantity || 0) + ' dona';
+            document.getElementById('clientTotalDebt2').textContent = formatNumber(Math.round(currentUser.debt || 0)) + ' so\'m';
+        };
+        
+        // Sex qo'shish
+        const addWorkshop = function() {
+            const name = document.getElementById('workshopName').value.trim();
+            const phone = document.getElementById('workshopPhone').value.trim();
+            const address = document.getElementById('workshopAddress').value.trim();
+            
+            if (!name) {
+                showMessage('Sex nomini kiriting!', 'error');
+                return;
+            }
+            
+            const workshops = DB.load('workshops') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (workshops.length > 0) {
+                newId = Math.max(...workshops.map(w => w.id)) + 1;
+            }
+            
+            // Yangi sex qo'shish
+            const newWorkshop = {
+                id: newId,
+                name: name,
+                phone: phone,
+                address: address,
+                debt: 0,
+                total_purchased: 0,
+                total_paid: 0,
+                defect_deductions: 0
+            };
+            
+            workshops.push(newWorkshop);
+            DB.save('workshops', workshops);
+            
+            // Formani tozalash
+            document.getElementById('workshopName').value = '';
+            document.getElementById('workshopPhone').value = '';
+            document.getElementById('workshopAddress').value = '';
+            
+            // Sahifani yangilash
+            updateWorkshops();
+            updateDashboard();
+            
+            // Aktivlik qo'shish
+            addActivity('workshop_add', `"${name}" sexi qo'shildi`);
+            
+            showMessage(`"${name}" sexi muvaffaqiyatli qo'shildi!`);
+        };
+        
+        // Sexni tahrirlash
+        const editWorkshop = function(id) {
+            const workshops = DB.load('workshops') || [];
+            const workshop = workshops.find(w => w.id == id);
+            
+            if (!workshop) {
+                showMessage('Sex topilmadi!', 'error');
+                return;
+            }
+            
+            const newName = prompt('Yangi sex nomi:', workshop.name);
+            if (!newName || newName.trim() === '') {
+                showMessage('Sex nomi bo\'sh bo\'lishi mumkin emas!', 'error');
+                return;
+            }
+            
+            const newPhone = prompt('Yangi telefon raqami:', workshop.phone || '');
+            const newAddress = prompt('Yangi manzil:', workshop.address || '');
+            
+            workshop.name = newName.trim();
+            workshop.phone = newPhone || '';
+            workshop.address = newAddress || '';
+            
+            DB.save('workshops', workshops);
+            updateWorkshops();
+            updateDashboard();
+            
+            addActivity('workshop_edit', `"${workshop.name}" sexi o'zgartirildi`);
+            
+            showMessage('Sex ma\'lumotlari muvaffaqiyatli o\'zgartirildi!');
+        };
+        
+        // Sexni o'chirish
+        const deleteWorkshop = function(id) {
+            const workshops = DB.load('workshops') || [];
+            const workshopIndex = workshops.findIndex(w => w.id == id);
+            
+            if (workshopIndex === -1) {
+                showMessage('Sex topilmadi!', 'error');
+                return;
+            }
+            
+            const workshopName = workshops[workshopIndex].name;
+            
+            // Sexga tegishli ma'lumotlar borligini tekshirish
+            const incomes = DB.load('incomes') || [];
+            const workshopIncomes = incomes.filter(income => income.workshop_id == id);
+            
+            if (workshopIncomes.length > 0) {
+                showMessage(`Ushbu sexda ${workshopIncomes.length} ta kirim mavjud. Avval kirimlarni o'chiring!`, 'error');
+                return;
+            }
+            
+            if (!confirm(`"${workshopName}" sexini o'chirishni istaysizmi?`)) {
+                return;
+            }
+            
+            workshops.splice(workshopIndex, 1);
+            DB.save('workshops', workshops);
+            updateWorkshops();
+            updateDashboard();
+            
+            addActivity('workshop_delete', `"${workshopName}" sexi o'chirildi`);
+            
+            showMessage(`"${workshopName}" sexi muvaffaqiyatli o'chirildi!`);
+        };
+        
+        // Kirim qo'shish
+        const addIncome = function() {
+            const date = document.getElementById('incomeDate').value;
+            const workshopId = parseInt(document.getElementById('incomeWorkshop').value);
+            const productType = document.getElementById('incomeProductType').value.trim();
+            const quantity = parseInt(document.getElementById('incomeQuantity').value);
+            const pricePerUnit = parseInt(document.getElementById('incomePrice').value);
+            const paid = parseInt(document.getElementById('incomePaid').value) || 0;
+            
+            // Validatsiya
+            if (!date) {
+                showMessage('Sana tanlang!', 'error');
+                return;
+            }
+            
+            if (!workshopId) {
+                showMessage('Sex tanlang!', 'error');
+                return;
+            }
+            
+            if (!productType) {
+                showMessage('Halat turini kiriting!', 'error');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                return;
+            }
+            
+            if (!pricePerUnit || pricePerUnit < 0) {
+                showMessage('To\'g\'ri narx kiriting!', 'error');
+                return;
+            }
+            
+            // Sexni topish
+            const workshops = DB.load('workshops') || [];
+            const workshop = workshops.find(w => w.id == workshopId);
+            
+            if (!workshop) {
+                showMessage('Tanlangan sex topilmadi!', 'error');
+                return;
+            }
+            
+            // Kirimlar ma'lumotlarini olish
+            const incomes = DB.load('incomes') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (incomes.length > 0) {
+                newId = Math.max(...incomes.map(i => i.id)) + 1;
+            }
+            
+            // Jami summa va qarzni hisoblash
+            const totalAmount = pricePerUnit * quantity;
+            const debt = totalAmount - paid;
+            
+            // Yangi kirim yaratish
+            const newIncome = {
+                id: newId,
+                date: date,
+                timestamp: new Date().toISOString(),
+                workshop_id: workshopId,
+                workshop_name: workshop.name,
+                product_type: productType,
+                quantity: quantity,
+                price_per_unit: pricePerUnit,
+                total_amount: totalAmount,
+                paid: paid,
+                debt: debt
+            };
+            
+            incomes.push(newIncome);
+            DB.save('incomes', incomes);
+            
+            // Sex ma'lumotlarini yangilash
+            workshop.total_purchased = (workshop.total_purchased || 0) + totalAmount;
+            workshop.total_paid = (workshop.total_paid || 0) + paid;
+            workshop.debt = (workshop.debt || 0) + debt;
+            
+            DB.save('workshops', workshops);
+            
+            // OMBOR MA'LUMOTLARINI YANGILASH
+            const storage = DB.load('storage') || [];
+            
+            // Har bir sex va halat turi kombinatsiyasi uchun alohida yozuv
+            const storageKey = `${workshopId}_${productType}`;
+            let storageItem = storage.find(item => item.key === storageKey);
+            
+            if (!storageItem) {
+                // Yangi mahsulot turi (ushbu sex uchun)
+                storageItem = {
+                    key: storageKey,
+                    workshop_id: workshopId,
+                    workshop_name: workshop.name,
+                    product_type: productType,
+                    total_in: 0,
+                    total_out: 0,
+                    defects: 0,
+                    current_balance: 0,
+                    avg_price: 0,
+                    total_cost: 0
+                };
+                storage.push(storageItem);
+            }
+            
+            // O'rtacha narxni hisoblash
+            const previousTotalCost = (storageItem.avg_price || 0) * (storageItem.total_in || 0);
+            const newTotalCost = previousTotalCost + totalAmount;
+            const newTotalIn = (storageItem.total_in || 0) + quantity;
+            
+            storageItem.total_in = newTotalIn;
+            storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
+            storageItem.avg_price = newTotalIn > 0 ? newTotalCost / newTotalIn : 0;
+            storageItem.total_cost = newTotalCost;
+            
+            DB.save('storage', storage);
+            
+            // Formani tozalash
+            document.getElementById('incomeProductType').value = '';
+            document.getElementById('incomeQuantity').value = '';
+            document.getElementById('incomePrice').value = '';
+            document.getElementById('incomePaid').value = '';
+            
+            // Sahifani yangilash
+            updateIncomePage();
+            updateDashboard();
+            updateStorage();
+            updateProductTypesForSales();
+            
+            // Aktivlik qo'shish
+            addActivity('income', `${workshop.name} sexidan ${quantity} dona ${productType} kirim qilindi`);
+            
+            showMessage(`${quantity} dona ${productType} kirim qilindi. Sex qarzi: ${formatNumber(Math.round(debt))} so'm`);
+        };
+        
+        // Kirimni o'chirish
+        const deleteIncome = function(id) {
+            const incomes = DB.load('incomes') || [];
+            const incomeIndex = incomes.findIndex(i => i.id == id);
+            
+            if (incomeIndex === -1) {
+                showMessage('Kirim topilmadi!', 'error');
+                return;
+            }
+            
+            const income = incomes[incomeIndex];
+            
+            if (!confirm(`Ushbu kirimni o'chirishni istaysizmi? (${income.product_type} - ${income.quantity} dona)`)) {
+                return;
+            }
+            
+            // Sex ma'lumotlarini yangilash
+            const workshops = DB.load('workshops') || [];
+            const workshop = workshops.find(w => w.id == income.workshop_id);
+            
+            if (workshop) {
+                const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
+                const paid = income.paid || 0;
+                const debt = totalAmount - paid;
+                
+                workshop.total_purchased = Math.max(0, (workshop.total_purchased || 0) - totalAmount);
+                workshop.total_paid = Math.max(0, (workshop.total_paid || 0) - paid);
+                workshop.debt = Math.max(0, (workshop.debt || 0) - debt);
+                
+                DB.save('workshops', workshops);
+            }
+            
+            // Ombor ma'lumotlarini yangilash
+            const storage = DB.load('storage') || [];
+            const storageKey = `${income.workshop_id}_${income.product_type}`;
+            const storageItem = storage.find(item => item.key === storageKey);
+            
+            if (storageItem) {
+                const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
+                const previousTotalCost = (storageItem.avg_price || 0) * (storageItem.total_in || 0);
+                const newTotalIn = Math.max(0, (storageItem.total_in || 0) - income.quantity);
+                const newTotalCost = Math.max(0, previousTotalCost - totalAmount);
+                
+                storageItem.total_in = newTotalIn;
+                storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - income.quantity);
+                storageItem.avg_price = newTotalIn > 0 ? newTotalCost / newTotalIn : 0;
+                storageItem.total_cost = newTotalCost;
+                
+                // Agar mahsulot miqdori 0 bo'lsa va boshqa harakatlar bo'lmasa, o'chirish
+                if (storageItem.total_in === 0 && storageItem.total_out === 0 && storageItem.defects === 0) {
+                    const storageIndex = storage.findIndex(item => item.key === storageKey);
+                    storage.splice(storageIndex, 1);
+                }
+                
+                DB.save('storage', storage);
+            }
+            
+            // Kirimni o'chirish
+            incomes.splice(incomeIndex, 1);
+            DB.save('incomes', incomes);
+            
+            // Sahifani yangilash
+            updateIncomePage();
+            updateDashboard();
+            updateStorage();
+            updateProductTypesForSales();
+            
+            // Aktivlik qo'shish
+            addActivity('income_delete', `${income.workshop_name} sexidan qilingan ${income.quantity} dona ${income.product_type} kirimi o'chirildi`);
+            
+            showMessage('Kirim muvaffaqiyatli o\'chirildi!');
+        };
+        
+        // Mijoz qo'shish
+        const addClient = function() {
+            const name = document.getElementById('newClientName').value.trim();
+            const phone = document.getElementById('newClientPhone').value.trim();
+            
+            if (!name) {
+                showMessage('Mijoz nomini kiriting!', 'error');
+                return;
+            }
+            
+            const clients = DB.load('clients') || [];
+            
+            // Yangi ID yaratish
+            const newId = generateClientId();
+            
+            // Yangi mijoz qo'shish
+            const newClient = {
+                id: newId,
+                name: name,
+                phone: phone,
+                created: new Date().toISOString(),
+                total_purchased: 0,
+                total_purchased_quantity: 0,
+                total_paid: 0,
+                debt: 0
+            };
+            
+            clients.push(newClient);
+            DB.save('clients', clients);
+            
+            // Formani tozalash
+            document.getElementById('newClientName').value = '';
+            document.getElementById('newClientPhone').value = '';
+            
+            // Sahifani yangilash
+            updateClientsList();
+            
+            // Aktivlik qo'shish
+            addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
+            
+            showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: ${newId}`);
+        };
+        
+        // Mijozni tahrirlash
+        const editClient = function(id) {
+            const clients = DB.load('clients') || [];
+            const client = clients.find(c => c.id == id);
+            
+            if (!client) {
+                showMessage('Mijoz topilmadi!', 'error');
+                return;
+            }
+            
+            const newName = prompt('Yangi mijoz nomi:', client.name);
+            if (!newName || newName.trim() === '') {
+                showMessage('Mijoz nomi bo\'sh bo\'lishi mumkin emas!', 'error');
+                return;
+            }
+            
+            const newPhone = prompt('Yangi telefon raqami:', client.phone || '');
+            
+            client.name = newName.trim();
+            client.phone = newPhone || '';
+            
+            DB.save('clients', clients);
+            updateClientsList();
+            
+            addActivity('client_edit', `"${client.name}" mijozi o'zgartirildi`);
+            
+            showMessage('Mijoz ma\'lumotlari muvaffaqiyatli o\'zgartirildi!');
+        };
+        
+        // Mijozni o'chirish
+        const deleteClient = function(id) {
+            const clients = DB.load('clients') || [];
+            const clientIndex = clients.findIndex(c => c.id == id);
+            
+            if (clientIndex === -1) {
+                showMessage('Mijoz topilmadi!', 'error');
+                return;
+            }
+            
+            const clientName = clients[clientIndex].name;
+            
+            // Mijozga tegishli ma'lumotlar borligini tekshirish
+            const sales = DB.load('sales') || [];
+            const clientSales = sales.filter(sale => sale.client_id == id);
+            
+            if (clientSales.length > 0) {
+                showMessage(`Ushbu mijozda ${clientSales.length} ta sotuv mavjud. Avval sotuvlarni o'chiring!`, 'error');
+                return;
+            }
+            
+            if (!confirm(`"${clientName}" mijoziini o'chirishni istaysizmi?`)) {
+                return;
+            }
+            
+            clients.splice(clientIndex, 1);
+            DB.save('clients', clients);
+            updateClientsList();
+            
+            addActivity('client_delete', `"${clientName}" mijozi o'chirildi`);
+            
+            showMessage(`"${clientName}" mijozi muvaffaqiyatli o'chirildi!`);
+        };
+        
+        // Sotuv qo'shish
+        const addSale = function() {
+            const clientId = parseInt(document.getElementById('saleClient').value);
+            const date = document.getElementById('saleDate').value;
+            const productType = document.getElementById('saleProductType').value;
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            const pricePerUnit = parseInt(document.getElementById('salePrice').value);
+            const paid = parseInt(document.getElementById('salePaid').value) || 0;
+            const note = document.getElementById('saleNote').value.trim();
+            
+            // Validatsiya
+            if (!clientId) {
+                showMessage('Mijoz tanlang!', 'error');
+                return;
+            }
+            
+            if (!date) {
+                showMessage('Sana tanlang!', 'error');
+                return;
+            }
+            
+            if (!productType) {
+                showMessage('Halat turini tanlang!', 'error');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                return;
+            }
+            
+            if (!pricePerUnit || pricePerUnit < 0) {
+                showMessage('To\'g\'ri narx kiriting!', 'error');
+                return;
+            }
+            
+            // Mijozni topish
+            const clients = DB.load('clients') || [];
+            const client = clients.find(c => c.id == clientId);
+            
+            if (!client) {
+                showMessage('Tanlangan mijoz topilmadi!', 'error');
+                return;
+            }
+            
+            // Select elementidan workshopId va productType ni olish
+            const productSelect = document.getElementById('saleProductType');
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const storageKey = selectedOption.value;
+            const workshopId = selectedOption.getAttribute('data-workshop-id');
+            const workshopName = selectedOption.getAttribute('data-workshop-name');
+            const actualProductType = selectedOption.getAttribute('data-product-type');
+            
+            if (!storageKey) {
+                showMessage('Halat turini tanlang!', 'error');
+                return;
+            }
+            
+            // Ombor qoldig'ini tekshirish
+            const storage = DB.load('storage') || [];
+            const storageItem = storage.find(item => item.key === storageKey);
+            
+            if (!storageItem) {
+                showMessage('Ushbu turdagi mahsulot omborda mavjud emas!', 'error');
+                return;
+            }
+            
+            if (storageItem.current_balance < quantity) {
+                showMessage(`Ombor qoldig'i yetarli emas! Mavjud: ${storageItem.current_balance} dona`, 'error');
+                return;
+            }
+            
+            // Sotuvlar ma'lumotlarini olish
+            const sales = DB.load('sales') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (sales.length > 0) {
+                newId = Math.max(...sales.map(s => s.id)) + 1;
+            }
+            
+            // Jami summa va qarzni hisoblash
+            const totalAmount = pricePerUnit * quantity;
+            const debt = totalAmount - paid;
+            
+            // Yangi sotuv yaratish
+            const newSale = {
+                id: newId,
+                date: date,
+                timestamp: new Date().toISOString(),
+                client_id: clientId,
+                client_name: client.name,
+                workshop_id: workshopId,
+                workshop_name: workshopName,
+                product_type: actualProductType,
+                storage_key: storageKey,
+                quantity: quantity,
+                price_per_unit: pricePerUnit,
+                total_amount: totalAmount,
+                paid: paid,
+                debt: debt,
+                note: note
+            };
+            
+            sales.push(newSale);
+            DB.save('sales', sales);
+            
+            // Mijoz ma'lumotlarini yangilash
+            client.total_purchased = (client.total_purchased || 0) + totalAmount;
+            client.total_purchased_quantity = (client.total_purchased_quantity || 0) + quantity;
+            client.total_paid = (client.total_paid || 0) + paid;
+            client.debt = (client.debt || 0) + debt;
+            
+            DB.save('clients', clients);
+            
+            // Ombor ma'lumotlarini yangilash (REAL HISOB)
+            storageItem.total_out = (storageItem.total_out || 0) + quantity;
+            storageItem.current_balance = (storageItem.current_balance || 0) - quantity;
+            
+            DB.save('storage', storage);
+            
+            // Formani tozalash
+            document.getElementById('saleQuantity').value = '';
+            document.getElementById('salePrice').value = '';
+            document.getElementById('salePaid').value = '';
+            document.getElementById('saleNote').value = '';
+            
+            // Sahifani yangilash
+            updateSalesPage();
+            updateDashboard();
+            updateStorage();
+            updateProductTypesForSales();
+            
+            // Aktivlik qo'shish
+            addActivity('sale', `${client.name} mijoziga ${quantity} dona ${actualProductType} sotildi`);
+            
+            showMessage(`${quantity} dona ${actualProductType} sotildi. Mijoz qarzi: ${formatNumber(Math.round(debt))} so'm`);
+        };
+        
+        // Sotuvni o'chirish
+        const deleteSale = function(id) {
+            const sales = DB.load('sales') || [];
+            const saleIndex = sales.findIndex(s => s.id == id);
+            
+            if (saleIndex === -1) {
+                showMessage('Sotuv topilmadi!', 'error');
+                return;
+            }
+            
+            const sale = sales[saleIndex];
+            
+            if (!confirm(`Ushbu sotuvni o'chirishni istaysizmi? (${sale.client_name} - ${sale.product_type} - ${sale.quantity} dona)`)) {
+                return;
+            }
+            
+            // Mijoz ma'lumotlarini yangilash
+            const clients = DB.load('clients') || [];
+            const client = clients.find(c => c.id == sale.client_id);
+            
+            if (client) {
+                client.total_purchased = Math.max(0, (client.total_purchased || 0) - sale.total_amount);
+                client.total_purchased_quantity = Math.max(0, (client.total_purchased_quantity || 0) - sale.quantity);
+                client.total_paid = Math.max(0, (client.total_paid || 0) - sale.paid);
+                client.debt = Math.max(0, (client.debt || 0) - sale.debt);
+                DB.save('clients', clients);
+            }
+            
+            // Ombor ma'lumotlarini yangilash
+            const storage = DB.load('storage') || [];
+            const storageItem = storage.find(item => item.key === sale.storage_key);
+            
+            if (storageItem) {
+                storageItem.total_out = Math.max(0, (storageItem.total_out || 0) - sale.quantity);
+                storageItem.current_balance = (storageItem.current_balance || 0) + sale.quantity;
+                DB.save('storage', storage);
+            }
+            
+            // Sotuvni o'chirish
+            sales.splice(saleIndex, 1);
+            DB.save('sales', sales);
+            
+            // Sahifani yangilash
+            updateSalesPage();
+            updateDashboard();
+            updateStorage();
+            updateProductTypesForSales();
+            
+            // Aktivlik qo'shish
+            addActivity('sale_delete', `${sale.client_name} mijoziga qilingan ${sale.quantity} dona ${sale.product_type} sotuvi o'chirildi`);
+            
+            showMessage('Sotuv muvaffaqiyatli o\'chirildi!');
+        };
+        
+        // Qaytarishni amalga oshirish
+        const processReturn = function() {
+            const saleId = parseInt(document.getElementById('returnSaleId').value);
+            const quantity = parseInt(document.getElementById('returnQuantity').value);
+            const reason = document.getElementById('returnReason').value;
+            const note = document.getElementById('returnNote').value.trim();
+            
+            // Validatsiya
+            if (!saleId) {
+                showMessage('Sotuv tanlang!', 'error');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                return;
+            }
+            
+            if (!reason) {
+                showMessage('Sababni tanlang!', 'error');
+                return;
+            }
+            
+            // Sotuvni topish
+            const sales = DB.load('sales') || [];
+            const sale = sales.find(s => s.id == saleId);
+            
+            if (!sale) {
+                showMessage('Tanlangan sotuv topilmadi!', 'error');
+                return;
+            }
+            
+            // Qaytarish miqdorini tekshirish
+            if (quantity > sale.quantity) {
+                showMessage(`Qaytarish miqdori sotuv miqdoridan ko'p! Maksimal: ${sale.quantity} dona`, 'error');
+                return;
+            }
+            
+            // Qaytishlar ma'lumotlarini olish
+            const returns = DB.load('returns') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (returns.length > 0) {
+                newId = Math.max(...returns.map(r => r.id)) + 1;
+            }
+            
+            // Bugungi sana
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Yangi qaytish yaratish
+            const newReturn = {
+                id: newId,
+                date: today,
+                timestamp: new Date().toISOString(),
+                type: 'return',
+                sale_id: saleId,
+                client_id: sale.client_id,
+                client_name: sale.client_name,
+                product_type: sale.product_type,
+                quantity: quantity,
+                reason: reason,
+                note: note,
+                amount_returned: (sale.price_per_unit || 0) * quantity
+            };
+            
+            returns.push(newReturn);
+            DB.save('returns', returns);
+            
+            // Mijoz ma'lumotlarini yangilash
+            const clients = DB.load('clients') || [];
+            const client = clients.find(c => c.id == sale.client_id);
+            
+            if (client) {
+                // Qaytarilgan summani hisoblash
+                const returnedAmount = (sale.price_per_unit || 0) * quantity;
+                
+                // Mijozning qarzini kamaytirish
+                client.debt = Math.max(0, (client.debt || 0) - returnedAmount);
+                // Mijozning to'langan summasini kamaytirish
+                client.total_paid = Math.max(0, (client.total_paid || 0) - returnedAmount);
+                
+                DB.save('clients', clients);
+            }
+            
+            // Sotuv ma'lumotlarini yangilash
+            sale.quantity = sale.quantity - quantity;
+            sale.total_amount = (sale.price_per_unit || 0) * sale.quantity;
+            sale.debt = sale.total_amount - sale.paid;
+            
+            DB.save('sales', sales);
+            
+            // Ombor ma'lumotlarini yangilash
+            const storage = DB.load('storage') || [];
+            const storageItem = storage.find(item => item.key === sale.storage_key);
+            
+            if (storageItem) {
+                storageItem.total_out = Math.max(0, (storageItem.total_out || 0) - quantity);
+                storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
+                
+                DB.save('storage', storage);
+            }
+            
+            // Formani tozalash
+            document.getElementById('returnQuantity').value = '';
+            document.getElementById('returnNote').value = '';
+            
+            // Sahifani yangilash
+            updateReturnsPage();
+            updateDashboard();
+            updateStorage();
+            updateProductTypesForSales();
+            
+            // Aktivlik qo'shish
+            addActivity('return', `${sale.client_name} mijozidan ${quantity} dona ${sale.product_type} qaytarildi`);
+            
+            showMessage(`${quantity} dona ${sale.product_type} qaytarildi. Mijoz qarzi kamaytirildi.`);
+        };
+        
+        // Brak mahsulotni qo'shish
+        const processDefect = function() {
+            const workshopId = parseInt(document.getElementById('defectWorkshop').value);
+            const productType = document.getElementById('defectProductType').value.trim();
+            const quantity = parseInt(document.getElementById('defectQuantity').value);
+            const reason = document.getElementById('defectReason').value;
+            const note = document.getElementById('defectNote').value.trim();
+            
+            // Validatsiya
+            if (!workshopId) {
+                showMessage('Sex tanlang!', 'error');
+                return;
+            }
+            
+            if (!productType) {
+                showMessage('Halat turini kiriting!', 'error');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                return;
+            }
+            
+            if (!reason) {
+                showMessage('Sababni tanlang!', 'error');
+                return;
+            }
+            
+            // Sexni topish
+            const workshops = DB.load('workshops') || [];
+            const workshop = workshops.find(w => w.id == workshopId);
+            
+            if (!workshop) {
+                showMessage('Tanlangan sex topilmadi!', 'error');
+                return;
+            }
+            
+            // Braklar ma'lumotlarini olish
+            const defects = DB.load('defects') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (defects.length > 0) {
+                newId = Math.max(...defects.map(d => d.id)) + 1;
+            }
+            
+            // Bugungi sana
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Yangi brak yaratish
+            const newDefect = {
+                id: newId,
+                date: today,
+                timestamp: new Date().toISOString(),
+                type: 'defect',
+                workshop_id: workshopId,
+                product_type: productType,
+                quantity: quantity,
+                reason: reason,
+                note: note
+            };
+            
+            defects.push(newDefect);
+            DB.save('defects', defects);
+            
+            // Qaytishlar ro'yxatiga ham qo'shish
+            const returns = DB.load('returns') || [];
+            returns.push({
+                id: newId,
+                date: today,
+                timestamp: new Date().toISOString(),
+                type: 'defect',
+                workshop_id: workshopId,
+                product_type: productType,
+                quantity: quantity,
+                reason: reason,
+                note: note
+            });
+            DB.save('returns', returns);
+            
+            // Sex ma'lumotlarini yangilash
+            workshop.defect_deductions = (workshop.defect_deductions || 0) + (workshop.avg_price || 0) * quantity;
+            workshop.debt = Math.max(0, (workshop.debt || 0) - ((workshop.avg_price || 0) * quantity));
+            
+            DB.save('workshops', workshops);
+            
+            // Formani tozalash
+            document.getElementById('defectProductType').value = '';
+            document.getElementById('defectQuantity').value = '';
+            document.getElementById('defectNote').value = '';
+            
+            // Sahifani yangilash
+            updateReturnsPage();
+            updateDashboard();
+            
+            // Aktivlik qo'shish
+            addActivity('defect', `${workshop.name} sexidan ${quantity} dona ${productType} brak deb belgilandi`);
+            
+            showMessage(`${quantity} dona ${productType} brak deb belgilandi. Sex qarzi kamaytirildi.`);
+        };
+        
+        // Qaytishni o'chirish
+        const deleteReturn = function(id) {
+            const returns = DB.load('returns') || [];
+            const returnIndex = returns.findIndex(r => r.id == id);
+            
+            if (returnIndex === -1) {
+                showMessage('Qaytish topilmadi!', 'error');
+                return;
+            }
+            
+            const ret = returns[returnIndex];
+            
+            if (!confirm(`Ushbu qaytishni o'chirishni istaysizmi? (${ret.type === 'return' ? 'Qaytarish' : 'Brak'} - ${ret.product_type} - ${ret.quantity} dona)`)) {
+                return;
+            }
+            
+            // Qaytish turiga qarab ishlov berish
+            if (ret.type === 'return') {
+                // Sotuv ma'lumotlarini yangilash
+                const sales = DB.load('sales') || [];
+                const sale = sales.find(s => s.id == ret.sale_id);
+                
+                if (sale) {
+                    sale.quantity = (sale.quantity || 0) + ret.quantity;
+                    sale.total_amount = (sale.price_per_unit || 0) * sale.quantity;
+                    sale.debt = sale.total_amount - sale.paid;
+                    
+                    DB.save('sales', sales);
+                }
+                
+                // Mijoz ma'lumotlarini yangilash
+                const clients = DB.load('clients') || [];
+                const client = clients.find(c => c.id == ret.client_id);
+                
+                if (client) {
+                    const returnedAmount = ret.amount_returned || ((ret.sale_price || 0) * ret.quantity);
+                    client.debt = (client.debt || 0) + returnedAmount;
+                    client.total_paid = Math.max(0, (client.total_paid || 0) - returnedAmount);
+                    
+                    DB.save('clients', clients);
+                }
+                
+                // Ombor ma'lumotlarini yangilash
+                const storage = DB.load('storage') || [];
+                const storageKey = `${sale.workshop_id}_${sale.product_type}`;
+                const storageItem = storage.find(item => item.key === storageKey);
+                
+                if (storageItem) {
+                    storageItem.total_out = (storageItem.total_out || 0) + ret.quantity;
+                    storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - ret.quantity);
+                    
+                    DB.save('storage', storage);
+                }
+            } else if (ret.type === 'defect') {
+                // Braklar ro'yxatidan o'chirish
+                const defects = DB.load('defects') || [];
+                const defectIndex = defects.findIndex(d => d.id == id);
+                
+                if (defectIndex !== -1) {
+                    const defect = defects[defectIndex];
+                    
+                    // Sex ma'lumotlarini yangilash
+                    const workshops = DB.load('workshops') || [];
+                    const workshop = workshops.find(w => w.id == defect.workshop_id);
+                    
+                    if (workshop) {
+                        workshop.defect_deductions = Math.max(0, (workshop.defect_deductions || 0) - (defect.amount || 0));
+                        workshop.debt = (workshop.debt || 0) + (defect.amount || 0);
+                        
+                        DB.save('workshops', workshops);
+                    }
+                    
+                    // Brakni o'chirish
+                    defects.splice(defectIndex, 1);
+                    DB.save('defects', defects);
+                }
+            }
+            
+            // Qaytishni o'chirish
+            returns.splice(returnIndex, 1);
+            DB.save('returns', returns);
+            
+            // Sahifani yangilash
+            updateReturnsPage();
+            updateDashboard();
+            
+            // Aktivlik qo'shish
+            addActivity('return_delete', `${ret.type === 'return' ? 'Qaytish' : 'Brak'} o'chirildi`);
+            
+            showMessage('Qaytish muvaffaqiyatli o\'chirildi!');
+        };
+        
+        // Sex qarzini to'lash
+        const payWorkshopDebt = function(workshopId) {
+            const workshops = DB.load('workshops') || [];
+            const workshop = workshops.find(w => w.id == workshopId);
+            
+            if (!workshop) {
+                showMessage('Sex topilmadi!', 'error');
+                return;
+            }
+            
+            const debt = workshop.debt || 0;
+            
+            if (debt <= 0) {
+                showMessage('Bu sexning qarzi yo\'q!', 'error');
+                return;
+            }
+            
+            const paymentAmount = prompt(`To'lov summasi kiriting (Maksimal: ${formatNumber(Math.round(debt))} so'm):`, Math.round(debt).toString());
+            
+            if (!paymentAmount) return;
+            
+            const amount = parseInt(paymentAmount);
+            
+            if (isNaN(amount) || amount <= 0) {
+                showMessage('To\'g\'ri summa kiriting!', 'error');
+                return;
+            }
+            
+            if (amount > debt) {
+                showMessage(`To'lov summasi qarzdan ko'p! Maksimal: ${formatNumber(Math.round(debt))} so'm`, 'error');
+                return;
+            }
+            
+            // To'lov ma'lumotlarini olish
+            const payments = DB.load('payments') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (payments.length > 0) {
+                newId = Math.max(...payments.map(p => p.id)) + 1;
+            }
+            
+            // Bugungi sana
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Yangi to'lov yaratish
+            const newPayment = {
+                id: newId,
+                date: today,
+                timestamp: new Date().toISOString(),
+                type: 'workshop',
+                workshop_id: workshopId,
+                amount: amount,
+                note: 'Sex qarzini to\'lash'
+            };
+            
+            payments.push(newPayment);
+            DB.save('payments', payments);
+            
+            // Sex ma'lumotlarini yangilash
+            workshop.total_paid = (workshop.total_paid || 0) + amount;
+            workshop.debt = Math.max(0, (workshop.debt || 0) - amount);
+            
+            DB.save('workshops', workshops);
+            
+            // Sahifani yangilash
+            updateDebtsPage();
+            updateDashboard();
+            
+            // Aktivlik qo'shish
+            addActivity('payment', `${workshop.name} sexiga ${formatNumber(amount)} so'm to'lov qilindi`);
+            
+            showMessage(`${formatNumber(amount)} so'm to'lov qilindi. Yangi qarz: ${formatNumber(Math.round(workshop.debt))} so'm`);
+        };
+        
+        // Mijoz qarzini to'lash
+        const payClientDebt = function(clientId) {
+            const clients = DB.load('clients') || [];
+            const client = clients.find(c => c.id == clientId);
+            
+            if (!client) {
+                showMessage('Mijoz topilmadi!', 'error');
+                return;
+            }
+            
+            const debt = client.debt || 0;
+            
+            if (debt <= 0) {
+                showMessage('Bu mijozning qarzi yo\'q!', 'error');
+                return;
+            }
+            
+            const paymentAmount = prompt(`To'lov summasi kiriting (Maksimal: ${formatNumber(Math.round(debt))} so'm):`, Math.round(debt).toString());
+            
+            if (!paymentAmount) return;
+            
+            const amount = parseInt(paymentAmount);
+            
+            if (isNaN(amount) || amount <= 0) {
+                showMessage('To\'g\'ri summa kiriting!', 'error');
+                return;
+            }
+            
+            if (amount > debt) {
+                showMessage(`To'lov summasi qarzdan ko'p! Maksimal: ${formatNumber(Math.round(debt))} so'm`, 'error');
+                return;
+            }
+            
+            // To'lov ma'lumotlarini olish
+            const payments = DB.load('payments') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (payments.length > 0) {
+                newId = Math.max(...payments.map(p => p.id)) + 1;
+            }
+            
+            // Bugungi sana
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Yangi to'lov yaratish
+            const newPayment = {
+                id: newId,
+                date: today,
+                timestamp: new Date().toISOString(),
+                type: 'client',
+                client_id: clientId,
+                amount: amount,
+                note: 'Mijoz qarzini to\'lash'
+            };
+            
+            payments.push(newPayment);
+            DB.save('payments', payments);
+            
+            // Mijoz ma'lumotlarini yangilash
+            client.total_paid = (client.total_paid || 0) + amount;
+            client.debt = Math.max(0, (client.debt || 0) - amount);
+            
+            DB.save('clients', clients);
+            
+            // Sahifani yangilash
+            updateDebtsPage();
+            updateDashboard();
+            
+            // Aktivlik qo'shish
+            addActivity('payment', `${client.name} mijozidan ${formatNumber(amount)} so'm to'lov olindi`);
+            
+            showMessage(`${formatNumber(amount)} so'm to'lov olindi. Yangi qarz: ${formatNumber(Math.round(client.debt))} so'm`);
+        };
+        
+        // To'lov qilish
+        const processPayment = function() {
+            const paymentType = document.getElementById('paymentType').value;
+            const workshopId = paymentType === 'workshop' ? parseInt(document.getElementById('paymentWorkshop').value) : null;
+            const clientId = paymentType === 'client' ? parseInt(document.getElementById('paymentClient').value) : null;
+            const amount = parseInt(document.getElementById('paymentAmount').value);
+            const date = document.getElementById('paymentDate').value;
+            const note = document.getElementById('paymentNote').value.trim();
+            
+            // Validatsiya
+            if (!paymentType) {
+                showMessage('To\'lov turini tanlang!', 'error');
+                return;
+            }
+            
+            if (paymentType === 'workshop' && !workshopId) {
+                showMessage('Sex tanlang!', 'error');
+                return;
+            }
+            
+            if (paymentType === 'client' && !clientId) {
+                showMessage('Mijoz tanlang!', 'error');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                showMessage('To\'g\'ri summa kiriting!', 'error');
+                return;
+            }
+            
+            if (!date) {
+                showMessage('Sana tanlang!', 'error');
+                return;
+            }
+            
+            // To'lov ma'lumotlarini olish
+            const payments = DB.load('payments') || [];
+            
+            // Yangi ID yaratish
+            let newId = 1;
+            if (payments.length > 0) {
+                newId = Math.max(...payments.map(p => p.id)) + 1;
+            }
+            
+            // Yangi to'lov yaratish
+            const newPayment = {
+                id: newId,
+                date: date,
+                timestamp: new Date().toISOString(),
+                type: paymentType,
+                workshop_id: workshopId,
+                client_id: clientId,
+                amount: amount,
+                note: note
+            };
+            
+            payments.push(newPayment);
+            DB.save('payments', payments);
+            
+            // Ma'lumotlarni yangilash
+            if (paymentType === 'workshop') {
+                // Sex ma'lumotlarini yangilash
+                const workshops = DB.load('workshops') || [];
+                const workshop = workshops.find(w => w.id == workshopId);
+                
+                if (workshop) {
+                    workshop.total_paid = (workshop.total_paid || 0) + amount;
+                    workshop.debt = Math.max(0, (workshop.debt || 0) - amount);
+                    
+                    DB.save('workshops', workshops);
+                    
+                    // Aktivlik qo'shish
+                    addActivity('payment', `${workshop.name} sexiga ${formatNumber(amount)} so'm to'lov qilindi`);
+                }
+            } else if (paymentType === 'client') {
+                // Mijoz ma'lumotlarini yangilash
+                const clients = DB.load('clients') || [];
+                const client = clients.find(c => c.id == clientId);
+                
+                if (client) {
+                    client.total_paid = (client.total_paid || 0) + amount;
+                    client.debt = Math.max(0, (client.debt || 0) - amount);
+                    
+                    DB.save('clients', clients);
+                    
+                    // Aktivlik qo'shish
+                    addActivity('payment', `${client.name} mijozidan ${formatNumber(amount)} so'm to'lov olindi`);
+                }
+            }
+            
+            // Formani tozalash
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentNote').value = '';
+            
+            // Sahifani yangilash
+            updateDebtsPage();
+            updateDashboard();
+            
+            showMessage(`${formatNumber(amount)} so'm to'lov muvaffaqiyatli saqlandi!`);
+        };
+        
+        // Kirish funksiyasi
+        const login = function() {
+            const userIdInput = document.getElementById('userId').value.trim();
+            const isClient = document.getElementById('clientBtn').classList.contains('active');
+            const isAdmin = document.getElementById('adminBtn').classList.contains('active');
+            
+            // Xato xabarini yashirish
+            document.getElementById('loginError').style.display = 'none';
+            
+            // Admin kirishi
+            if (isAdmin) {
+                if (userIdInput.toLowerCase() === 'admin') {
+                    currentUserType = 'admin';
+                    currentUser = { name: 'Admin', role: 'admin' };
+                    
+                    // Kirish sahifasini yashirish va asosiy sahifani ko'rsatish
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    
+                    // Admin navigatsiyasini ko'rsatish
+                    document.getElementById('adminNav').style.display = 'flex';
+                    document.getElementById('clientInfoCard').style.display = 'none';
+                    document.getElementById('clientPage').style.display = 'none';
+                    document.getElementById('dashboardPage').style.display = 'block';
+                    
+                    // PDF tugmasini ko'rsatish
+                    document.getElementById('pdfDownloadBtn').style.display = 'flex';
+                    
+                    // Foydalanuvchi turini ko'rsatish
+                    document.getElementById('currentUserType').innerHTML = '<span class="badge badge-primary">Admin</span>';
+                    
+                    // Dashboardni yangilash
+                    updateDashboard();
+                    
+                    // Aktivlik qo'shish
+                    addActivity('login', 'Admin tizimga kirdi');
+                    
+                    return;
+                } else {
+                    document.getElementById('errorText').textContent = 'Noto\'g\'ri admin paroli! "to`g`ri" so\'zni kiriting.';
+                    document.getElementById('loginError').style.display = 'flex';
+                    return;
+                }
+            }
+            
+            // Mijoz kirishi
+            if (isClient) {
+                // ID raqamini tekshirish
+                if (!userIdInput || userIdInput.length !== 6 || isNaN(userIdInput)) {
+                    document.getElementById('errorText').textContent = 'Iltimos, 6 xonali ID raqamini kiriting!';
+                    document.getElementById('loginError').style.display = 'flex';
+                    return;
+                }
+                
+                const clientId = parseInt(userIdInput);
+                
+                // Mijozni topish
+                const clients = DB.load('clients') || [];
+                const client = clients.find(c => c.id === clientId);
+                
+                if (!client) {
+                    document.getElementById('errorText').textContent = 'Mijoz topilmadi! ID raqamini tekshiring.';
+                    document.getElementById('loginError').style.display = 'flex';
+                    return;
+                }
+                
+                currentUserType = 'client';
+                currentUser = client;
+                
+                // Kirish sahifasini yashirish va asosiy sahifani ko'rsatish
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                
+                // Admin navigatsiyasini yashirish
+                document.getElementById('adminNav').style.display = 'none';
+                document.getElementById('clientInfoCard').style.display = 'block';
+                document.getElementById('clientPage').style.display = 'block';
+                document.getElementById('dashboardPage').style.display = 'none';
+                
+                // PDF tugmasini ko'rsatish
+                document.getElementById('pdfDownloadBtn').style.display = 'flex';
+                
+                // Foydalanuvchi turini ko'rsatish
+                document.getElementById('currentUserType').innerHTML = '<span class="badge badge-success">Mijoz</span>';
+                
+                // Mijoz sahifasini yangilash
+                updateClientPage();
+                
+                // Aktivlik qo'shish
+                addActivity('login', `${client.name} mijoz tizimga kirdi`);
+                
+                return;
+            }
+            
+            // Agar foydalanuvchi turi tanlanmagan bo'lsa
+            document.getElementById('errorText').textContent = 'Iltimos, foydalanuvchi turini tanlang!';
+            document.getElementById('loginError').style.display = 'flex';
+        };
+        
+        // Chiqish funksiyasi
+        const logout = function() {
+            currentUser = null;
+            currentUserType = null;
+            
+            // Asosiy sahifani yashirish va kirish sahifasini ko'rsatish
+            document.getElementById('mainPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+            
+            // Formani tozalash
+            document.getElementById('userId').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        };
+        
+        // PDF yuklab olish
+        const downloadPDF = function() {
+            showMessage('PDF yuklab olish funksiyasi ishga tushirildi. Bu funksiya to\'liq versiyada ishlaydi.', 'info');
+        };
+        
+        // DOM yuklanganidan so'ng
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dastlabki ma'lumotlarni yaratish
+            initializeData();
+            
+            // Bugungi sanani default qilish
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                if (!input.value) {
+                    input.value = today;
+                }
+            });
+            
+            // Foydalanuvchi turini tanlash
+            document.getElementById('clientBtn').addEventListener('click', function() {
+                document.getElementById('clientBtn').classList.add('active');
+                document.getElementById('adminBtn').classList.remove('active');
+                document.getElementById('idLabel').textContent = 'Mijoz ID raqamini kiriting (6 xonali)';
+                document.getElementById('userId').placeholder = 'Masalan: 482931';
+            });
+            
+            document.getElementById('adminBtn').addEventListener('click', function() {
+                document.getElementById('adminBtn').classList.add('active');
+                document.getElementById('clientBtn').classList.remove('active');
+                document.getElementById('idLabel').textContent = 'Sotuvchi parolini kiriting';
+                document.getElementById('userId').placeholder = '******';
+            });
+            
+            // Kirish tugmasi
+            document.getElementById('loginButton').addEventListener('click', login);
+            
+            // Enter tugmasini bosganda kirish
+            document.getElementById('userId').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+            
+            // Chiqish tugmasi
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Navigatsiya tugmalari
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                    updatePage(pageId);
+                });
+            });
+            
+            // Tab tugmalari
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Barcha tab tugmalaridan active klassini olib tashlash
+                    this.parentElement.querySelectorAll('.tab-btn').forEach(tb => {
+                        tb.classList.remove('active');
+                    });
+                    
+                    // Barcha tab kontentlarini yashirish
+                    const tabContents = this.closest('.card').querySelectorAll('.tab-content');
+                    tabContents.forEach(tc => {
+                        tc.classList.remove('active');
+                    });
+                    
+                    // Faqat tanlangan tabni ko'rsatish
+                    this.classList.add('active');
+                    const tabContent = document.getElementById(tabId);
+                    if (tabContent) {
+                        tabContent.classList.add('active');
+                    }
+                });
+            });
+            
+            // Modal yopish
+            document.querySelectorAll('.close-modal, #closeMessageModal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('messageModal').style.display = 'none';
+                });
+            });
+            
+            // Modal tashqarisini bosganda yopish
+            document.getElementById('messageModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+            
+            // PDF yuklab olish tugmasi
+            document.getElementById('pdfDownloadBtn').addEventListener('click', downloadPDF);
+            
+            // Mijoz PDF yuklab olish tugmasi
+            const clientDownloadPDF = document.getElementById('clientDownloadPDF');
+            if (clientDownloadPDF) {
+                clientDownloadPDF.addEventListener('click', downloadPDF);
+            }
+            
+            // Sex qo'shish tugmasi
+            const addWorkshopBtn = document.getElementById('addWorkshopBtn');
+            if (addWorkshopBtn) {
+                addWorkshopBtn.addEventListener('click', addWorkshop);
+            }
+            
+            // Kirim qo'shish tugmasi
+            const addIncomeBtn = document.getElementById('addIncomeBtn');
+            if (addIncomeBtn) {
+                addIncomeBtn.addEventListener('click', addIncome);
+            }
+            
+            // Mijoz qo'shish tugmasi
+            const saveNewClientBtn = document.getElementById('saveNewClientBtn');
+            if (saveNewClientBtn) {
+                saveNewClientBtn.addEventListener('click', addClient);
+            }
+            
+            // Yangi mijoz tugmasi
+            const newClientBtn = document.getElementById('newClientBtn');
+            if (newClientBtn) {
+                newClientBtn.addEventListener('click', function() {
+                    // "Mijozlar" tabiga o'tish
+                    const salesPage = document.getElementById('salesPage');
+                    if (salesPage) {
+                        salesPage.querySelectorAll('.tab-btn').forEach(tb => {
+                            tb.classList.remove('active');
+                        });
+                        salesPage.querySelectorAll('.tab-content').forEach(tc => {
+                            tc.classList.remove('active');
+                        });
+                        
+                        const clientsTabBtn = salesPage.querySelector('.tab-btn[data-tab="clients"]');
+                        const clientsTabContent = document.getElementById('clients');
+                        
+                        if (clientsTabBtn && clientsTabContent) {
+                            clientsTabBtn.classList.add('active');
+                            clientsTabContent.classList.add('active');
+                        }
+                    }
+                });
+            }
+            
+            // Sotuv qo'shish tugmasi
+            const addSaleBtn = document.getElementById('addSaleBtn');
+            if (addSaleBtn) {
+                addSaleBtn.addEventListener('click', addSale);
+            }
+            
+            // Qaytarish tugmasi
+            const processReturnBtn = document.getElementById('processReturnBtn');
+            if (processReturnBtn) {
+                processReturnBtn.addEventListener('click', processReturn);
+            }
+            
+            // Brak qo'shish tugmasi
+            const processDefectBtn = document.getElementById('processDefectBtn');
+            if (processDefectBtn) {
+                processDefectBtn.addEventListener('click', processDefect);
+            }
+            
+            // To'lov qilish tugmasi
+            const processPaymentBtn = document.getElementById('processPaymentBtn');
+            if (processPaymentBtn) {
+                processPaymentBtn.addEventListener('click', processPayment);
+            }
+            
+            // To'lov turini o'zgartirganda
+            const paymentTypeSelect = document.getElementById('paymentType');
+            if (paymentTypeSelect) {
+                paymentTypeSelect.addEventListener('change', function() {
+                    const type = this.value;
+                    
+                    if (type === 'workshop') {
+                        document.getElementById('paymentWorkshopGroup').style.display = 'block';
+                        document.getElementById('paymentClientGroup').style.display = 'none';
+                    } else if (type === 'client') {
+                        document.getElementById('paymentWorkshopGroup').style.display = 'none';
+                        document.getElementById('paymentClientGroup').style.display = 'block';
+                    } else {
+                        document.getElementById('paymentWorkshopGroup').style.display = 'none';
+                        document.getElementById('paymentClientGroup').style.display = 'none';
+                    }
+                });
+            }
+            
+            // Sotuv tanlanganda qaytarish miqdorini cheklash
+            const returnSaleSelect = document.getElementById('returnSaleId');
+            if (returnSaleSelect) {
+                returnSaleSelect.addEventListener('change', function() {
+                    const saleId = parseInt(this.value);
+                    
+                    if (!saleId) {
+                        document.getElementById('maxReturnQuantity').textContent = '0 dona';
+                        document.getElementById('returnClientName').textContent = '-';
+                        document.getElementById('returnProductTypeInfo').textContent = '-';
+                        document.getElementById('returnSaleQuantity').textContent = '0 dona';
+                        document.getElementById('returnSalePrice').textContent = '0 so\'m';
+                        return;
+                    }
+                    
+                    const sales = DB.load('sales') || [];
+                    const sale = sales.find(s => s.id === saleId);
+                    
+                    if (sale) {
+                        document.getElementById('maxReturnQuantity').textContent = sale.quantity + ' dona';
+                        document.getElementById('returnClientName').textContent = sale.client_name;
+                        document.getElementById('returnProductTypeInfo').textContent = sale.product_type;
+                        document.getElementById('returnSaleQuantity').textContent = sale.quantity + ' dona';
+                        document.getElementById('returnSalePrice').textContent = formatNumber(Math.round(sale.price_per_unit || 0)) + ' so\'m';
+                    }
+                });
+            }
+            
+            // Halat turi tanlanganda ombor qoldig'ini ko'rsatish
+            const saleProductTypeSelect = document.getElementById('saleProductType');
+            if (saleProductTypeSelect) {
+                saleProductTypeSelect.addEventListener('change', function() {
+                    const productType = this.value;
+                    
+                    if (!productType) {
+                        document.getElementById('productStockInfo').textContent = '0 dona';
+                        return;
+                    }
+                    
+                    const storage = DB.load('storage') || [];
+                    const storageItem = storage.find(item => item.key === productType);
+                    
+                    if (storageItem) {
+                        document.getElementById('productStockInfo').textContent = storageItem.current_balance + ' dona';
+                    } else {
+                        document.getElementById('productStockInfo').textContent = '0 dona';
+                    }
+                });
+            }
+            
+            // Sotuv hisobotini yangilash
+            const updateSaleReport = function() {
+                const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
+                const pricePerUnit = parseInt(document.getElementById('salePrice').value) || 0;
+                const paid = parseInt(document.getElementById('salePaid').value) || 0;
+                
+                const totalAmount = quantity * pricePerUnit;
+                const debt = totalAmount - paid;
+                
+                // Foyda hisoblash (taxminiy)
+                const productType = document.getElementById('saleProductType').value;
+                let estimatedProfit = 0;
+                
+                if (productType) {
+                    const storage = DB.load('storage') || [];
+                    const storageItem = storage.find(item => item.key === productType);
+                    
+                    if (storageItem) {
+                        const avgCost = storageItem.avg_price || 0;
+                        estimatedProfit = (pricePerUnit - avgCost) * quantity;
+                    }
+                }
+                
+                document.getElementById('saleTotalQuantity').textContent = formatNumber(quantity) + ' dona';
+                document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so\'m';
+                document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so\'m';
+                document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so\'m';
+                document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so\'m';
+            };
+            
+            // Sotuv miqdori, narxi yoki to'langan summa o'zgarganda hisobotni yangilash
+            const saleQuantityInput = document.getElementById('saleQuantity');
+            const salePriceInput = document.getElementById('salePrice');
+            const salePaidInput = document.getElementById('salePaid');
+            
+            if (saleQuantityInput) saleQuantityInput.addEventListener('input', updateSaleReport);
+            if (salePriceInput) salePriceInput.addEventListener('input', updateSaleReport);
+            if (salePaidInput) salePaidInput.addEventListener('input', updateSaleReport);
+            
+            // Global funksiyalarni window obyektiga qo'shish
+            window.editWorkshop = editWorkshop;
+            window.deleteWorkshop = deleteWorkshop;
+            window.editClient = editClient;
+            window.deleteClient = deleteClient;
+            window.deleteSale = deleteSale;
+            window.deleteReturn = deleteReturn;
+            window.payWorkshopDebt = payWorkshopDebt;
+            window.payClientDebt = payClientDebt;
+            window.deleteIncome = deleteIncome;
+            
+            // Dastur versiyasini konsolga chiqarish
+            console.log('Halat Savdosi Tizimi yuklandi. Versiya: 3.0 (Responsive va To\'g\'rilangan)');
+            console.log('Tizim mobil qurilmalar uchun moslashtirildi.');
+        });
+    </script>
+</body>
+</html>
