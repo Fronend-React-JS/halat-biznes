@@ -16,7 +16,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyC6qClFhL8k7RQENOkBipAnT0_q9E3gKz0",
             authDomain: "biznes-8898e.firebaseapp.com",
-            databaseURL: "https://biznes-8898e-default-rtdb.asia-southeast1.firebasedatabase.app",  // BU YERGA O'ZGARTIRILDI
+            databaseURL: "https://biznes-8898e-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "biznes-8898e",
             storageBucket: "biznes-8898e.firebasestorage.app",
             messagingSenderId: "443994595724",
@@ -682,6 +682,23 @@
             flex-wrap: wrap;
         }
         
+        /* Qarz to'lovlari uchun tab'lar */
+        #debtPayments .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--light);
+            margin-bottom: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #debtPayments .tab-content {
+            display: none;
+        }
+
+        #debtPayments .tab-content.active {
+            display: block;
+        }
+        
         /* Mobil uchun stillar */
         @media (max-width: 575px) {
             .header {
@@ -874,7 +891,6 @@
         <div class="header">
             <h1><i class="fas fa-tshirt"></i> Halat Savdosi</h1>
             <div class="header-actions">
-            
                 <span id="currentUserType"></span>
                 <button id="logoutBtn" class="btn btn-warning btn-sm">
                     <i class="fas fa-sign-out-alt"></i> Chiqish
@@ -1766,7 +1782,7 @@
                                                 <th>Summa</th>
                                                 <th>Izoh</th>
                                             </tr>
-                                    </thead>
+                                        </thead>
                                         <tbody id="paymentsHistory">
                                             <!-- To'lovlar tarixi bu yerda ko'rsatiladi -->
                                         </tbody>
@@ -2190,6 +2206,7 @@
             const sales = appData.sales;
             const incomes = appData.incomes;
             const defects = appData.defects;
+            const workshopReturns = appData.workshopReturns;
             const workshops = appData.workshops;
             const clients = appData.clients;
             
@@ -2210,7 +2227,38 @@
                 
                 totalProfit += (salePrice - avgCost) * quantity;
             });
-            document.getElementById('totalProfit').textContent = formatNumber(Math.round(totalProfit)) + ' so\'m';
+            
+            // Brak tufayli yo'qotilgan foydani hisoblash (MIJOZGA SOTILGAN NARXDA)
+            let defectProfitLoss = 0;
+            defects.forEach(defect => {
+                const salePrice = defect.sale_price_per_unit || 0;
+                const storageItem = storage.find(item => 
+                    item.workshop_id == defect.workshop_id && 
+                    item.product_type === defect.product_type
+                );
+                const avgCost = storageItem ? storageItem.avg_price : 0;
+                
+                defectProfitLoss += (salePrice - avgCost) * defect.quantity;
+            });
+            
+            // Sexga qaytarish tufayli yo'qotilgan foydani hisoblash
+            let returnProfitLoss = 0;
+            workshopReturns.forEach(ret => {
+                const storageItem = storage.find(item => 
+                    item.workshop_id == ret.workshop_id && 
+                    item.product_type === ret.product_type
+                );
+                const avgCost = storageItem ? storageItem.avg_price : 0;
+                
+                // Sexga qaytarilgan mahsulot sotilmagani uchun foyda yo'q
+                // Faqat xarajat qaytariladi
+                returnProfitLoss += avgCost * ret.quantity;
+            });
+            
+            // Haqiqiy foyda = sotuv foydasi - brak tufayli yo'qotilgan foyda - sexga qaytarish xarajatlari
+            const realProfit = totalProfit - defectProfitLoss - returnProfitLoss;
+            
+            document.getElementById('totalProfit').textContent = formatNumber(Math.round(realProfit)) + ' so\'m';
             
             // Jami qarzlar
             let totalDebts = 0;
@@ -2253,7 +2301,34 @@
                 
                 todayProfit += (salePrice - avgCost) * quantity;
             });
-            document.getElementById('todayProfit').textContent = formatNumber(Math.round(todayProfit)) + ' so`m';
+            
+            // Bugungi brak va qaytarishlarni hisoblash
+            let todayDefectProfitLoss = 0;
+            defects.filter(defect => defect.date === today).forEach(defect => {
+                const salePrice = defect.sale_price_per_unit || 0;
+                const storageItem = storage.find(item => 
+                    item.workshop_id == defect.workshop_id && 
+                    item.product_type === defect.product_type
+                );
+                const avgCost = storageItem ? storageItem.avg_price : 0;
+                
+                todayDefectProfitLoss += (salePrice - avgCost) * defect.quantity;
+            });
+            
+            let todayReturnProfitLoss = 0;
+            workshopReturns.filter(ret => ret.date === today).forEach(ret => {
+                const storageItem = storage.find(item => 
+                    item.workshop_id == ret.workshop_id && 
+                    item.product_type === ret.product_type
+                );
+                const avgCost = storageItem ? storageItem.avg_price : 0;
+                
+                todayReturnProfitLoss += avgCost * ret.quantity;
+            });
+            
+            const todayRealProfit = todayProfit - todayDefectProfitLoss - todayReturnProfitLoss;
+            
+            document.getElementById('todayProfit').textContent = formatNumber(Math.round(todayRealProfit)) + ' so\'m';
             
             let todayDefects = 0;
             defects.filter(defect => defect.date === today).forEach(defect => {
@@ -2814,6 +2889,21 @@
                 });
             }
             
+            // To'lovlar tarixi tab'idagi tab tugmalarini yashirish emas
+            const addPaymentTab = document.getElementById('addPaymentTab');
+            const paymentsHistoryTab = document.getElementById('paymentsHistoryTab');
+            const debtPaymentsTabs = document.querySelector('#debtPayments .tabs');
+            
+            if (debtPaymentsTabs) {
+                debtPaymentsTabs.style.display = 'flex';
+            }
+            if (addPaymentTab) {
+                addPaymentTab.style.display = 'block';
+            }
+            if (paymentsHistoryTab) {
+                paymentsHistoryTab.style.display = 'block';
+            }
+            
             const today = new Date().toISOString().split('T')[0];
             const paymentDate = document.getElementById('paymentDate');
             if (paymentDate && !paymentDate.value) {
@@ -3293,7 +3383,7 @@
                 
                 showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: ${newId}`);
             } catch (error) {
-                console.error('Mijoz qo\'shishda xatolik:', error);
+                console.error('Mijoz qoshishda xatolik:', error);
                 showMessage('Xatolik yuz berdi!', 'error');
             }
         };
@@ -3338,7 +3428,7 @@
                 
                 showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: <strong>${newId}</strong>`);
             } catch (error) {
-                console.error('Mijoz qo\'shishda xatolik:', error);
+                console.error('Mijoz qo`hishda xatolik:', error);
                 showMessage('Xatolik yuz berdi!', 'error');
             }
         };
@@ -3611,7 +3701,7 @@
             }
         };
         
-        // Brak qaydnomasi (Mijozdan brak olib kelish)
+        // Brak qaydnomasi (Mijozdan brak olib kelish) - TURLANGAN VERSIYA
         const processDefect = async function() {
             try {
                 const clientId = parseInt(document.getElementById('defectClient').value);
@@ -3667,8 +3757,13 @@
                 const clientSales = sales.filter(sale => sale.client_id == clientId && sale.product_type === productType && sale.workshop_id == workshopId);
                 
                 let totalSold = 0;
+                let totalSaleValue = 0;
+                let totalSaleQuantity = 0;
+                
                 clientSales.forEach(sale => {
                     totalSold += sale.quantity || 0;
+                    totalSaleValue += (sale.price_per_unit || 0) * (sale.quantity || 0);
+                    totalSaleQuantity += sale.quantity || 0;
                 });
                 
                 const defects = appData.defects;
@@ -3682,6 +3777,20 @@
                 if (totalSold - totalDefects < quantity) {
                     showMessage(`Mijozdan olinayotgan brak miqdori sotilganidan ko'p! Sotilgan: ${totalSold} dona, Avval olingan brak: ${totalDefects} dona, Qolgan: ${totalSold - totalDefects} dona`, 'error');
                     return;
+                }
+                
+                // O'rtacha sotuv narxini hisoblash (mijozga sotilgan narx)
+                let averageSalePrice = 0;
+                if (totalSaleQuantity > 0) {
+                    averageSalePrice = totalSaleValue / totalSaleQuantity;
+                }
+                
+                // Agar sotuv topilmasa, sexdan olingan narxni olamiz
+                if (averageSalePrice === 0) {
+                    let storage = [...appData.storage];
+                    const storageKey = `${workshopId}_${productType}`;
+                    const storageItem = storage.find(item => item.key === storageKey);
+                    averageSalePrice = storageItem ? storageItem.avg_price : (workshop.avg_price || 0);
                 }
                 
                 let defectsDB = [...appData.defects];
@@ -3705,29 +3814,27 @@
                     product_type: productType,
                     quantity: quantity,
                     reason: reason,
-                    note: note
+                    note: note,
+                    sale_price_per_unit: averageSalePrice // Sotuv narxini saqlaymiz
                 };
                 
                 defectsDB.push(newDefect);
                 await DB.save('defects', defectsDB);
                 appData.defects = defectsDB;
                 
-                // Mijoz qarzini kamaytirish
+                // Mijoz qarzini kamaytirish - MIJOZGA SOTILGAN NARXDA
+                let defectAmount = averageSalePrice * quantity;
+                
+                // OMBORGA QO'SHISH (mijozdan olib kelingan brak omborga qo'shiladi)
                 let storage = [...appData.storage];
                 const storageKey = `${workshopId}_${productType}`;
                 const storageItem = storage.find(item => item.key === storageKey);
                 
-                let defectAmount = 0;
                 if (storageItem) {
-                    defectAmount = (storageItem.avg_price || workshop.avg_price || 0) * quantity;
-                    
-                    // OMBORGA QO'SHISH (mijozdan olib kelingan brak omborga qo'shiladi)
                     storageItem.defects = (storageItem.defects || 0) + quantity;
                     storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
                     await DB.save('storage', storage);
                     appData.storage = storage;
-                } else {
-                    defectAmount = (workshop.avg_price || 0) * quantity;
                 }
                 
                 client.defect_deductions = (client.defect_deductions || 0) + defectAmount;
@@ -3743,7 +3850,7 @@
                 updateDashboard();
                 updateStorage();
                 
-                await addActivity('defect', `${client.name} mijozidan ${quantity} dona ${productType} brak olib kelindi`);
+                await addActivity('defect', `${client.name} mijozidan ${quantity} dona ${productType} brak olib kelindi (${formatNumber(Math.round(defectAmount))} so'm)`);
                 
                 showMessage(`${quantity} dona ${productType} brak ro'yxatga olindi. Mijoz qarzi ${formatNumber(Math.round(defectAmount))} so'm kamaytirildi.`);
             } catch (error) {
@@ -3829,7 +3936,7 @@
                 await DB.save('storage', storage);
                 appData.storage = storage;
                 
-                // Sex qarzini kamaytirish
+                // Sex qarzini kamaytirish - SEXDAN OLINGAN NARXDA
                 const returnAmount = (storageItem.avg_price || workshop.avg_price || 0) * quantity;
                 workshop.defect_deductions = (workshop.defect_deductions || 0) + returnAmount;
                 workshop.debt = Math.max(0, (workshop.debt || 0) - returnAmount);
@@ -3853,7 +3960,7 @@
             }
         };
         
-        // Qaytishni o'chirish
+        // Qaytishni o'chirish - TURLANGAN VERSIYA
         const deleteReturn = async function(id, type) {
             try {
                 if (type === 'defect') {
@@ -3871,28 +3978,23 @@
                         return;
                     }
                     
-                    // Mijoz qarzini qaytarish
+                    // Mijoz qarzini qaytarish - SOTUV NARXIDA QAYTARISH
                     let clients = [...appData.clients];
                     const client = clients.find(c => c.id == defect.client_id);
                     
                     if (client) {
+                        let defectAmount = (defect.sale_price_per_unit || 0) * defect.quantity;
+                        
+                        // OMBORDAN CHIQARISH (brak olib tashlanadi)
                         let storage = [...appData.storage];
                         const storageKey = `${defect.workshop_id}_${defect.product_type}`;
                         const storageItem = storage.find(item => item.key === storageKey);
                         
-                        let defectAmount = 0;
                         if (storageItem) {
-                            defectAmount = (storageItem.avg_price || 0) * defect.quantity;
-                            
-                            // OMBORDAN CHIQARISH (brak olib tashlanadi)
                             storageItem.defects = Math.max(0, (storageItem.defects || 0) - defect.quantity);
                             storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - defect.quantity);
                             await DB.save('storage', storage);
                             appData.storage = storage;
-                        } else {
-                            const workshops = appData.workshops;
-                            const workshop = workshops.find(w => w.id == defect.workshop_id);
-                            defectAmount = (workshop ? workshop.avg_price : 0) * defect.quantity;
                         }
                         
                         client.defect_deductions = Math.max(0, (client.defect_deductions || 0) - defectAmount);
@@ -3932,7 +4034,7 @@
                         await DB.save('storage', storage);
                         appData.storage = storage;
                         
-                        // Sex qarzini qaytarish
+                        // Sex qarzini qaytarish - SEXDAN OLINGAN NARXDA
                         let workshops = [...appData.workshops];
                         const workshop = workshops.find(w => w.id == returnItem.workshop_id);
                         
@@ -4182,7 +4284,7 @@
             document.getElementById('loginError').style.display = 'none';
             
             if (isAdmin) {
-                if (userIdInput === '2') {  // PAROL O'ZGARTIRILDI: 22 -> 2
+                if (userIdInput === '2') {
                     currentUserType = 'admin';
                     currentUser = { name: 'Admin', role: 'admin' };
                     
@@ -4360,6 +4462,28 @@
                     });
                 });
                 
+                // Qarz to'lovlari bo'limidagi tab'lar
+                document.querySelectorAll('#debtPayments .tab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const tabId = this.getAttribute('data-tab');
+                        
+                        this.parentElement.querySelectorAll('.tab-btn').forEach(tb => {
+                            tb.classList.remove('active');
+                        });
+                        
+                        const tabContents = this.closest('.card').querySelectorAll('.tab-content');
+                        tabContents.forEach(tc => {
+                            tc.classList.remove('active');
+                        });
+                        
+                        this.classList.add('active');
+                        const tabContent = document.getElementById(tabId);
+                        if (tabContent) {
+                            tabContent.classList.add('active');
+                        }
+                    });
+                });
+                
                 // Modal yopish
                 document.querySelectorAll('.close-modal, #closeMessageModal').forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -4516,10 +4640,10 @@
                     }
                     
                     document.getElementById('saleTotalQuantity').textContent = formatNumber(quantity) + ' dona';
-                    document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so`m';
-                    document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so`m';
-                    document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so`m';
-                    document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so`m';
+                    document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so\'m';
+                    document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so\'m';
+                    document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so\'m';
+                    document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so\'m';
                 };
                 
                 const saleQuantityInput = document.getElementById('saleQuantity');
@@ -4540,10 +4664,11 @@
                 window.deleteIncome = deleteIncome;
                 window.showDebtPaymentModal = showDebtPaymentModal;
                 
-                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.0 (Firebase bilan)');
-                console.log('Tizim mobil qurilmalar uchun moslashtirildi. Admin paroli: 2');
-                console.log('Ma\'lumotlar Firebase\'da saqlanadi - barcha qurilmalardan kirganda bir xil ma\'lumotlar ko\'rinadi');
-                console.log('Firebase Realtime Database ishlatilmoqda');
+                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.1 (Tuzatilgan)');
+                console.log('Brak narxi muammosi tuzatildi: mijozga sotilgan narxda hisoblanadi');
+                console.log('Foyda hisobi tuzatildi: brak va qaytarishlar foydadan chiqariladi');
+                console.log('Qarz to\'lovlari tab\'lari muammosi tuzatildi');
+                console.log('Admin paroli: aytmiman');
                 
                 // Oflayn ma'lumotlarni sinxronlash
                 setTimeout(() => {
