@@ -5,6 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Halat Savdosi Tizimi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6qClFhL8k7RQENOkBipAnT0_q9E3gKz0",
+            authDomain: "biznes-8898e.firebaseapp.com",
+            databaseURL: "https://biznes-8898e-default-rtdb.asia-southeast1.firebasedatabase.app",  // BU YERGA O'ZGARTIRILDI
+            projectId: "biznes-8898e",
+            storageBucket: "biznes-8898e.firebasestorage.app",
+            messagingSenderId: "443994595724",
+            appId: "1:443994595724:web:1e2d3ac9ae115efbde76a9",
+            measurementId: "G-3XQ2SKDPXB"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Ma'lumotlar bazasi funksiyalari
+        window.DB = {
+            save: async function(key, data) {
+                try {
+                    await set(ref(database, key), data);
+                    return true;
+                } catch (error) {
+                    console.error('Firebase saqlash xatosi:', error);
+                    // Agar internet yo'q bo'lsa, localStorage'ga saqlash
+                    localStorage.setItem(key, JSON.stringify(data));
+                    localStorage.setItem(`${key}_synced`, 'false');
+                    return false;
+                }
+            },
+            
+            load: async function(key) {
+                try {
+                    const snapshot = await get(ref(database, key));
+                    if (snapshot.exists()) {
+                        return snapshot.val();
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('Firebase yuklash xatosi:', error);
+                    // Agar internet yo'q bo'lsa, localStorage'dan yuklash
+                    try {
+                        const data = localStorage.getItem(key);
+                        return data ? JSON.parse(data) : null;
+                    } catch (e) {
+                        console.error('LocalStorage yuklash xatosi:', e);
+                        return null;
+                    }
+                }
+            },
+            
+            update: async function(key, updates) {
+                try {
+                    await update(ref(database, key), updates);
+                    return true;
+                } catch (error) {
+                    console.error('Firebase yangilash xatosi:', error);
+                    return false;
+                }
+            },
+            
+            remove: async function(key) {
+                try {
+                    await remove(ref(database, key));
+                    return true;
+                } catch (error) {
+                    console.error('Firebase o\'chirish xatosi:', error);
+                    return false;
+                }
+            },
+            
+            onDataChange: function(key, callback) {
+                const dbRef = ref(database, key);
+                onValue(dbRef, (snapshot) => {
+                    const data = snapshot.val();
+                    callback(data);
+                });
+            },
+            
+            // Oflayn rejim uchun sync funksiyasi
+            syncOfflineData: async function() {
+                const keys = Object.keys(localStorage);
+                for (const key of keys) {
+                    if (key.endsWith('_synced') && localStorage.getItem(key) === 'false') {
+                        const dataKey = key.replace('_synced', '');
+                        const data = JSON.parse(localStorage.getItem(dataKey));
+                        try {
+                            await set(ref(database, dataKey), data);
+                            localStorage.setItem(key, 'true');
+                            console.log(`${dataKey} ma'lumotlari Firebase'ga sinxronlandi`);
+                        } catch (error) {
+                            console.error(`${dataKey} sinxronlash xatosi:`, error);
+                        }
+                    }
+                }
+            }
+        };
+        
+        console.log('Firebase va ma\'lumotlar bazasi muvaffaqiyatli yuklandi');
+    </script>
+    
     <style>
         /* Asosiy CSS */
         :root {
@@ -1766,124 +1874,186 @@
         let currentPage = 'dashboard';
         let currentTheme = 'light';
         
-        // Ma'lumotlar bazasi
-        const DB = {
-            save: function(key, data) {
-                try {
-                    localStorage.setItem(key, JSON.stringify(data));
-                    return true;
-                } catch (e) {
-                    console.error('Saqlashda xatolik:', e);
-                    return false;
-                }
-            },
-            
-            load: function(key) {
-                try {
-                    const data = localStorage.getItem(key);
-                    return data ? JSON.parse(data) : null;
-                } catch (e) {
-                    console.error('O\'qishda xatolik:', e);
-                    return null;
-                }
-            },
-            
-            remove: function(key) {
-                localStorage.removeItem(key);
-            },
-            
-            clear: function() {
-                localStorage.clear();
-            }
+        // Firebase ma'lumotlari - obyekt shaklida saqlash uchun
+        let appData = {
+            workshops: [],
+            clients: [],
+            storage: [],
+            incomes: [],
+            sales: [],
+            defects: [],
+            workshopReturns: [],
+            payments: [],
+            activities: [],
+            app_initialized: false
         };
         
         // Dastur ma'lumotlarini yaratish
-        const initializeData = function() {
-            if (!DB.load('app_initialized')) {
-                console.log('Dastur birinchi marta ishga tushirildi, bo\'sh ma\'lumotlar yaratilmoqda...');
+        const initializeData = async function() {
+            try {
+                const initialized = await DB.load('app_initialized');
                 
-                // Test ma'lumotlari
-                const testClients = [
-                    {
-                        id: 123456,
-                        name: "Ali Valiyev",
-                        phone: "+998901234567",
-                        created: new Date().toISOString(),
-                        total_purchased: 1500000,
-                        total_purchased_quantity: 15,
-                        total_paid: 1000000,
-                        defect_deductions: 50000,
-                        debt: 450000
-                    },
-                    {
-                        id: 234567,
-                        name: "Hasan Hasanov",
-                        phone: "+998902345678",
-                        created: new Date().toISOString(),
-                        total_purchased: 800000,
-                        total_purchased_quantity: 8,
-                        total_paid: 600000,
-                        defect_deductions: 20000,
-                        debt: 180000
-                    },
-                    {
-                        id: 345678,
-                        name: "Botir Qodirov",
-                        phone: "+998903456789",
-                        created: new Date().toISOString(),
-                        total_purchased: 1200000,
-                        total_purchased_quantity: 12,
-                        total_paid: 1200000,
-                        defect_deductions: 0,
-                        debt: 0
+                if (!initialized) {
+                    console.log('Dastur birinchi marta ishga tushirildi, Firebase\'ga test ma\'lumotlari yaratilmoqda...');
+                    
+                    // Test ma'lumotlari
+                    appData.workshops = [
+                        {
+                            id: 1,
+                            name: "AKMAL AKA",
+                            phone: "+998901112233",
+                            address: "Chorsu bozori",
+                            debt: 250000,
+                            total_purchased: 1000000,
+                            total_paid: 750000,
+                            defect_deductions: 0,
+                            avg_price: 50000
+                        },
+                        {
+                            id: 2,
+                            name: "SHERZOD",
+                            phone: "+998902223344",
+                            address: "Yunusobod",
+                            debt: 180000,
+                            total_purchased: 800000,
+                            total_paid: 620000,
+                            defect_deductions: 0,
+                            avg_price: 45000
+                        }
+                    ];
+                    
+                    appData.clients = [
+                        {
+                            id: 123456,
+                            name: "Ali Valiyev",
+                            phone: "+998901234567",
+                            created: new Date().toISOString(),
+                            total_purchased: 1500000,
+                            total_purchased_quantity: 15,
+                            total_paid: 1000000,
+                            defect_deductions: 50000,
+                            debt: 450000
+                        },
+                        {
+                            id: 234567,
+                            name: "Hasan Hasanov",
+                            phone: "+998902345678",
+                            created: new Date().toISOString(),
+                            total_purchased: 800000,
+                            total_purchased_quantity: 8,
+                            total_paid: 600000,
+                            defect_deductions: 20000,
+                            debt: 180000
+                        },
+                        {
+                            id: 345678,
+                            name: "Botir Qodirov",
+                            phone: "+998903456789",
+                            created: new Date().toISOString(),
+                            total_purchased: 1200000,
+                            total_purchased_quantity: 12,
+                            total_paid: 1200000,
+                            defect_deductions: 0,
+                            debt: 0
+                        }
+                    ];
+                    
+                    appData.storage = [];
+                    appData.incomes = [];
+                    appData.sales = [];
+                    appData.defects = [];
+                    appData.workshopReturns = [];
+                    appData.payments = [];
+                    appData.activities = [];
+                    appData.app_initialized = true;
+                    
+                    // Barcha ma'lumotlarni Firebase'ga saqlash
+                    await Promise.all([
+                        DB.save('workshops', appData.workshops),
+                        DB.save('clients', appData.clients),
+                        DB.save('storage', appData.storage),
+                        DB.save('incomes', appData.incomes),
+                        DB.save('sales', appData.sales),
+                        DB.save('defects', appData.defects),
+                        DB.save('workshopReturns', appData.workshopReturns),
+                        DB.save('payments', appData.payments),
+                        DB.save('activities', appData.activities),
+                        DB.save('app_initialized', appData.app_initialized)
+                    ]);
+                    
+                    console.log('Test ma\'lumotlar Firebase\'ga yaratildi.');
+                } else {
+                    // Firebase'dan ma'lumotlarni yuklash
+                    console.log('Firebase\'dan ma\'lumotlar yuklanmoqda...');
+                    appData.workshops = await DB.load('workshops') || [];
+                    appData.clients = await DB.load('clients') || [];
+                    appData.storage = await DB.load('storage') || [];
+                    appData.incomes = await DB.load('incomes') || [];
+                    appData.sales = await DB.load('sales') || [];
+                    appData.defects = await DB.load('defects') || [];
+                    appData.workshopReturns = await DB.load('workshopReturns') || [];
+                    appData.payments = await DB.load('payments') || [];
+                    appData.activities = await DB.load('activities') || [];
+                    
+                    console.log('Firebase\'dan ma\'lumotlar muvaffaqiyatli yuklandi');
+                }
+                
+                // Ma'lumotlar o'zgarishini kuzatish
+                DB.onDataChange('workshops', (data) => {
+                    if (data) {
+                        appData.workshops = Object.values(data);
+                        if (currentPage === 'workshops' || currentPage === 'dashboard' || currentPage === 'debts') {
+                            updatePage(currentPage);
+                        }
                     }
-                ];
+                });
                 
-                const testWorkshops = [
-                    {
-                        id: 1,
-                        name: "AKMAL AKA",
-                        phone: "+998901112233",
-                        address: "Chorsu bozori",
-                        debt: 250000,
-                        total_purchased: 1000000,
-                        total_paid: 750000,
-                        defect_deductions: 0,
-                        avg_price: 50000
-                    },
-                    {
-                        id: 2,
-                        name: "SHERZOD",
-                        phone: "+998902223344",
-                        address: "Yunusobod",
-                        debt: 180000,
-                        total_purchased: 800000,
-                        total_paid: 620000,
-                        defect_deductions: 0,
-                        avg_price: 45000
+                DB.onDataChange('clients', (data) => {
+                    if (data) {
+                        appData.clients = Object.values(data);
+                        if (currentPage === 'sales' || currentPage === 'debts' || currentPage === 'client') {
+                            updatePage(currentPage);
+                        }
                     }
-                ];
+                });
                 
-                DB.save('workshops', testWorkshops);
-                DB.save('clients', testClients);
-                DB.save('storage', []);
-                DB.save('incomes', []);
-                DB.save('sales', []);
-                DB.save('defects', []);
-                DB.save('workshopReturns', []);
-                DB.save('payments', []);
-                DB.save('activities', []);
-                DB.save('app_initialized', true);
+                DB.onDataChange('incomes', (data) => {
+                    if (data) {
+                        appData.incomes = Object.values(data);
+                        if (currentPage === 'income' || currentPage === 'dashboard') {
+                            updatePage(currentPage);
+                        }
+                    }
+                });
                 
-                console.log('Test ma\'lumotlar yaratildi.');
+                DB.onDataChange('sales', (data) => {
+                    if (data) {
+                        appData.sales = Object.values(data);
+                        if (currentPage === 'sales' || currentPage === 'dashboard') {
+                            updatePage(currentPage);
+                        }
+                    }
+                });
+                
+                DB.onDataChange('activities', (data) => {
+                    if (data) {
+                        appData.activities = Object.values(data);
+                        if (currentPage === 'dashboard') {
+                            updateRecentActivities();
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Ma\'lumotlarni yuklashda xatolik:', error);
+                showMessage('Ma\'lumotlar bazasiga ulanishda xatolik!', 'error');
             }
         };
         
         // Tasodifiy mijoz ID yaratish
         const generateClientId = function() {
             let id;
-            const clients = DB.load('clients') || [];
-            const existingIds = clients.map(c => c.id);
+            const existingIds = appData.clients.map(c => c.id);
             
             do {
                 id = Math.floor(100000 + Math.random() * 900000);
@@ -1926,22 +2096,28 @@
         };
         
         // Aktivlik qo'shish
-        const addActivity = function(type, details) {
-            const activities = DB.load('activities') || [];
-            activities.unshift({
-                id: Date.now(),
-                type: type,
-                details: details,
-                timestamp: new Date().toISOString(),
-                user: currentUserType === 'admin' ? 'Admin' : (currentUser ? currentUser.name : 'Noma\'lum')
-            });
-            
-            if (activities.length > 50) {
-                activities.length = 50;
+        const addActivity = async function(type, details) {
+            try {
+                let activities = [...appData.activities];
+                
+                activities.unshift({
+                    id: Date.now(),
+                    type: type,
+                    details: details,
+                    timestamp: new Date().toISOString(),
+                    user: currentUserType === 'admin' ? 'Admin' : (currentUser ? currentUser.name : 'Noma\'lum')
+                });
+                
+                if (activities.length > 50) {
+                    activities.length = 50;
+                }
+                
+                await DB.save('activities', activities);
+                appData.activities = activities;
+                updateRecentActivities();
+            } catch (error) {
+                console.error('Aktivlik qo\'shishda xatolik:', error);
             }
-            
-            DB.save('activities', activities);
-            updateRecentActivities();
         };
         
         // Bo'sh holatni tekshirish
@@ -2008,16 +2184,14 @@
             window.scrollTo(0, 0);
         };
         
-        // Bosh sahifaga qaytish funksiyasi
-      
         // Boshqaruv panelini yangilash
         const updateDashboard = function() {
-            const storage = DB.load('storage') || [];
-            const sales = DB.load('sales') || [];
-            const incomes = DB.load('incomes') || [];
-            const defects = DB.load('defects') || [];
-            const workshops = DB.load('workshops') || [];
-            const clients = DB.load('clients') || [];
+            const storage = appData.storage;
+            const sales = appData.sales;
+            const incomes = appData.incomes;
+            const defects = appData.defects;
+            const workshops = appData.workshops;
+            const clients = appData.clients;
             
             // Ombor qoldig'i
             let totalProducts = 0;
@@ -2092,7 +2266,7 @@
         
         // So'nggi aktivliklarni yangilash
         const updateRecentActivities = function() {
-            const activities = DB.load('activities') || [];
+            const activities = appData.activities;
             const tbody = document.getElementById('recentActivities');
             
             if (!tbody) return;
@@ -2147,7 +2321,7 @@
         
         // Sexlar sahifasini yangilash
         const updateWorkshops = function() {
-            const workshops = DB.load('workshops') || [];
+            const workshops = appData.workshops;
             const tbody = document.getElementById('workshopsList');
             
             if (!tbody) return;
@@ -2181,7 +2355,7 @@
         
         // Sexlar ro'yxatini select elementlariga qo'shish
         const updateWorkshopsSelectOptions = function() {
-            const workshops = DB.load('workshops') || [];
+            const workshops = appData.workshops;
             
             const incomeWorkshopSelect = document.getElementById('incomeWorkshop');
             if (incomeWorkshopSelect) {
@@ -2230,7 +2404,7 @@
         
         // Ombor sahifasini yangilash
         const updateStorage = function() {
-            const storage = DB.load('storage') || [];
+            const storage = appData.storage;
             const summaryBody = document.getElementById('storageSummaryBody');
             
             if (summaryBody) {
@@ -2282,7 +2456,7 @@
         
         // Sotuv sahifasi uchun mahsulot turlarini yangilash
         const updateProductTypesForSales = function() {
-            const storage = DB.load('storage') || [];
+            const storage = appData.storage;
             const productSelect = document.getElementById('saleProductType');
             
             if (!productSelect) return;
@@ -2304,7 +2478,7 @@
         
         // Sexga qaytarish uchun mahsulot turlarini yangilash
         const updateWorkshopProductsForReturns = function() {
-            const storage = DB.load('storage') || [];
+            const storage = appData.storage;
             const productSelect = document.getElementById('returnToWorkshopProduct');
             
             if (!productSelect) return;
@@ -2332,7 +2506,7 @@
                 incomeDate.value = today;
             }
             
-            const incomes = DB.load('incomes') || [];
+            const incomes = appData.incomes;
             const tbody = document.getElementById('incomeHistory');
             
             if (tbody) {
@@ -2344,7 +2518,7 @@
                 recentIncomes.forEach(income => {
                     const row = document.createElement('tr');
                     
-                    const workshops = DB.load('workshops') || [];
+                    const workshops = appData.workshops;
                     const workshop = workshops.find(w => w.id == income.workshop_id);
                     const workshopName = workshop ? workshop.name : 'Noma\'lum';
                     
@@ -2373,7 +2547,7 @@
         
         // Sotuv sahifasini yangilash
         const updateSalesPage = function() {
-            const clients = DB.load('clients') || [];
+            const clients = appData.clients;
             const clientSelect = document.getElementById('saleClient');
             
             if (clientSelect) {
@@ -2409,7 +2583,7 @@
         
         // Mijozlar tab'ini yangilash
         const updateClientsTab = function() {
-            const clients = DB.load('clients') || [];
+            const clients = appData.clients;
             const tbody = document.getElementById('clientsListTable');
             
             if (!tbody) return;
@@ -2446,7 +2620,7 @@
         
         // To'lov sahifasi uchun mijozlar ro'yxatini yangilash
         const updateClientsForPayments = function() {
-            const clients = DB.load('clients') || [];
+            const clients = appData.clients;
             const paymentClientSelect = document.getElementById('paymentClient');
             
             if (!paymentClientSelect) return;
@@ -2462,7 +2636,7 @@
         
         // Sotuv tarixini yangilash
         const updateSalesHistory = function() {
-            const sales = DB.load('sales') || [];
+            const sales = appData.sales;
             const tbody = document.getElementById('salesHistoryBody');
             
             if (!tbody) return;
@@ -2498,8 +2672,8 @@
         
         // Braklar sahifasini yangilash
         const updateReturnsPage = function() {
-            const defects = DB.load('defects') || [];
-            const workshopReturns = DB.load('workshopReturns') || [];
+            const defects = appData.defects;
+            const workshopReturns = appData.workshopReturns;
             const returnsTbody = document.getElementById('returnsHistoryBody');
             
             if (returnsTbody) {
@@ -2519,7 +2693,7 @@
                         clientOrWorkshop = ret.client_name || 'Noma\'lum mijoz';
                     } else {
                         typeText = 'Sexga qaytarish';
-                        const workshops = DB.load('workshops') || [];
+                        const workshops = appData.workshops;
                         const workshop = workshops.find(w => w.id == ret.workshop_id);
                         clientOrWorkshop = workshop ? workshop.name : 'Noma\'lum sex';
                     }
@@ -2551,7 +2725,7 @@
         
         // Qarzlar sahifasini yangilash
         const updateDebtsPage = function() {
-            const workshops = DB.load('workshops') || [];
+            const workshops = appData.workshops;
             const workshopDebtsBody = document.getElementById('workshopDebtsBody');
             
             if (workshopDebtsBody) {
@@ -2578,7 +2752,7 @@
                 });
             }
             
-            const clients = DB.load('clients') || [];
+            const clients = appData.clients;
             const clientDebtsBody = document.getElementById('clientDebtsBody');
             
             if (clientDebtsBody) {
@@ -2605,7 +2779,7 @@
                 });
             }
             
-            const payments = DB.load('payments') || [];
+            const payments = appData.payments;
             const paymentsTbody = document.getElementById('paymentsHistory');
             
             if (paymentsTbody) {
@@ -2620,11 +2794,11 @@
                     let fromTo = '';
                     
                     if (payment.type === 'workshop') {
-                        const workshops = DB.load('workshops') || [];
+                        const workshops = appData.workshops;
                         const workshop = workshops.find(w => w.id == payment.workshop_id);
                         fromTo = workshop ? workshop.name : 'Noma\'lum sex';
                     } else {
-                        const clients = DB.load('clients') || [];
+                        const clients = appData.clients;
                         const client = clients.find(c => c.id == payment.client_id);
                         fromTo = client ? client.name : 'Noma\'lum mijoz';
                     }
@@ -2672,7 +2846,7 @@
             document.getElementById('clientTotalPaid2').textContent = formatNumber(Math.round(currentUser.total_paid || 0)) + ' so\'m';
             
             // Mijozning mahsulotlarini ko'rsatish
-            const sales = DB.load('sales') || [];
+            const sales = appData.sales;
             const clientSales = sales.filter(sale => sale.client_id == currentUser.id);
             const productsList = document.getElementById('clientProductsList');
             
@@ -2706,7 +2880,7 @@
             }
             
             // Mijozning to'lovlarini ko'rsatish
-            const payments = DB.load('payments') || [];
+            const payments = appData.payments;
             const clientPayments = payments.filter(payment => payment.type === 'client' && payment.client_id == currentUser.id);
             const paymentsList = document.getElementById('clientPaymentsList');
             
@@ -2739,947 +2913,1054 @@
         };
         
         // Sex qo'shish
-        const addWorkshop = function() {
-            const name = document.getElementById('workshopName').value.trim();
-            const phone = document.getElementById('workshopPhone').value.trim();
-            const address = document.getElementById('workshopAddress').value.trim();
-            
-            if (!name) {
-                showMessage('Sex nomini kiriting!', 'error');
-                return;
+        const addWorkshop = async function() {
+            try {
+                const name = document.getElementById('workshopName').value.trim();
+                const phone = document.getElementById('workshopPhone').value.trim();
+                const address = document.getElementById('workshopAddress').value.trim();
+                
+                if (!name) {
+                    showMessage('Sex nomini kiriting!', 'error');
+                    return;
+                }
+                
+                let workshops = [...appData.workshops];
+                
+                let newId = 1;
+                if (workshops.length > 0) {
+                    newId = Math.max(...workshops.map(w => w.id)) + 1;
+                }
+                
+                const newWorkshop = {
+                    id: newId,
+                    name: name,
+                    phone: phone,
+                    address: address,
+                    debt: 0,
+                    total_purchased: 0,
+                    total_paid: 0,
+                    defect_deductions: 0,
+                    avg_price: 0
+                };
+                
+                workshops.push(newWorkshop);
+                
+                await DB.save('workshops', workshops);
+                appData.workshops = workshops;
+                
+                document.getElementById('workshopName').value = '';
+                document.getElementById('workshopPhone').value = '';
+                document.getElementById('workshopAddress').value = '';
+                
+                updateWorkshops();
+                updateDashboard();
+                
+                await addActivity('workshop_add', `"${name}" sexi qo'shildi`);
+                
+                showMessage(`"${name}" sexi muvaffaqiyatli qo'shildi!`);
+            } catch (error) {
+                console.error('Sex qo\'shishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
             }
-            
-            const workshops = DB.load('workshops') || [];
-            
-            let newId = 1;
-            if (workshops.length > 0) {
-                newId = Math.max(...workshops.map(w => w.id)) + 1;
-            }
-            
-            const newWorkshop = {
-                id: newId,
-                name: name,
-                phone: phone,
-                address: address,
-                debt: 0,
-                total_purchased: 0,
-                total_paid: 0,
-                defect_deductions: 0,
-                avg_price: 0
-            };
-            
-            workshops.push(newWorkshop);
-            DB.save('workshops', workshops);
-            
-            document.getElementById('workshopName').value = '';
-            document.getElementById('workshopPhone').value = '';
-            document.getElementById('workshopAddress').value = '';
-            
-            updateWorkshops();
-            updateDashboard();
-            
-            addActivity('workshop_add', `"${name}" sexi qo'shildi`);
-            
-            showMessage(`"${name}" sexi muvaffaqiyatli qo'shildi!`);
         };
         
         // Sexni tahrirlash
-        const editWorkshop = function(id) {
-            const workshops = DB.load('workshops') || [];
-            const workshop = workshops.find(w => w.id == id);
-            
-            if (!workshop) {
-                showMessage('Sex topilmadi!', 'error');
-                return;
+        const editWorkshop = async function(id) {
+            try {
+                let workshops = [...appData.workshops];
+                const workshop = workshops.find(w => w.id == id);
+                
+                if (!workshop) {
+                    showMessage('Sex topilmadi!', 'error');
+                    return;
+                }
+                
+                const newName = prompt('Yangi sex nomi:', workshop.name);
+                if (!newName || newName.trim() === '') {
+                    showMessage('Sex nomi bo\'sh bo\'lishi mumkin emas!', 'error');
+                    return;
+                }
+                
+                const newPhone = prompt('Yangi telefon raqami:', workshop.phone || '');
+                const newAddress = prompt('Yangi manzil:', workshop.address || '');
+                
+                workshop.name = newName.trim();
+                workshop.phone = newPhone || '';
+                workshop.address = newAddress || '';
+                
+                await DB.save('workshops', workshops);
+                appData.workshops = workshops;
+                
+                updateWorkshops();
+                updateDashboard();
+                
+                await addActivity('workshop_edit', `"${workshop.name}" sexi o'zgartirildi`);
+                
+                showMessage('Sex ma\'lumotlari muvaffaqiyatli o\'zgartirildi!');
+            } catch (error) {
+                console.error('Sexni tahrirlashda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
             }
-            
-            const newName = prompt('Yangi sex nomi:', workshop.name);
-            if (!newName || newName.trim() === '') {
-                showMessage('Sex nomi bo\'sh bo\'lishi mumkin emas!', 'error');
-                return;
-            }
-            
-            const newPhone = prompt('Yangi telefon raqami:', workshop.phone || '');
-            const newAddress = prompt('Yangi manzil:', workshop.address || '');
-            
-            workshop.name = newName.trim();
-            workshop.phone = newPhone || '';
-            workshop.address = newAddress || '';
-            
-            DB.save('workshops', workshops);
-            updateWorkshops();
-            updateDashboard();
-            
-            addActivity('workshop_edit', `"${workshop.name}" sexi o'zgartirildi`);
-            
-            showMessage('Sex ma\'lumotlari muvaffaqiyatli o\'zgartirildi!');
         };
         
         // Sexni o'chirish
-        const deleteWorkshop = function(id) {
-            const workshops = DB.load('workshops') || [];
-            const workshopIndex = workshops.findIndex(w => w.id == id);
-            
-            if (workshopIndex === -1) {
-                showMessage('Sex topilmadi!', 'error');
-                return;
+        const deleteWorkshop = async function(id) {
+            try {
+                let workshops = [...appData.workshops];
+                const workshopIndex = workshops.findIndex(w => w.id == id);
+                
+                if (workshopIndex === -1) {
+                    showMessage('Sex topilmadi!', 'error');
+                    return;
+                }
+                
+                const workshopName = workshops[workshopIndex].name;
+                
+                const incomes = appData.incomes;
+                const workshopIncomes = incomes.filter(income => income.workshop_id == id);
+                
+                if (workshopIncomes.length > 0) {
+                    showMessage(`Ushbu sexda ${workshopIncomes.length} ta kirim mavjud. Avval kirimlarni o'chiring!`, 'error');
+                    return;
+                }
+                
+                if (!confirm(`"${workshopName}" sexini o'chirishni istaysizmi?`)) {
+                    return;
+                }
+                
+                workshops.splice(workshopIndex, 1);
+                
+                await DB.save('workshops', workshops);
+                appData.workshops = workshops;
+                
+                updateWorkshops();
+                updateDashboard();
+                
+                await addActivity('workshop_delete', `"${workshopName}" sexi o'chirildi`);
+                
+                showMessage(`"${workshopName}" sexi muvaffaqiyatli o'chirildi!`);
+            } catch (error) {
+                console.error('Sexni o\'chirishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
             }
-            
-            const workshopName = workshops[workshopIndex].name;
-            
-            const incomes = DB.load('incomes') || [];
-            const workshopIncomes = incomes.filter(income => income.workshop_id == id);
-            
-            if (workshopIncomes.length > 0) {
-                showMessage(`Ushbu sexda ${workshopIncomes.length} ta kirim mavjud. Avval kirimlarni o'chiring!`, 'error');
-                return;
-            }
-            
-            if (!confirm(`"${workshopName}" sexini o'chirishni istaysizmi?`)) {
-                return;
-            }
-            
-            workshops.splice(workshopIndex, 1);
-            DB.save('workshops', workshops);
-            updateWorkshops();
-            updateDashboard();
-            
-            addActivity('workshop_delete', `"${workshopName}" sexi o'chirildi`);
-            
-            showMessage(`"${workshopName}" sexi muvaffaqiyatli o'chirildi!`);
         };
         
         // Kirim qo'shish
-        const addIncome = function() {
-            const date = document.getElementById('incomeDate').value;
-            const workshopId = parseInt(document.getElementById('incomeWorkshop').value);
-            const productType = document.getElementById('incomeProductType').value.trim().toUpperCase();
-            const quantity = parseInt(document.getElementById('incomeQuantity').value);
-            const pricePerUnit = parseInt(document.getElementById('incomePrice').value);
-            const paid = parseInt(document.getElementById('incomePaid').value) || 0;
-            
-            if (!date) {
-                showMessage('Sana tanlang!', 'error');
-                return;
-            }
-            
-            if (!workshopId) {
-                showMessage('Sex tanlang!', 'error');
-                return;
-            }
-            
-            if (!productType) {
-                showMessage('Halat turini kiriting!', 'error');
-                return;
-            }
-            
-            if (!quantity || quantity <= 0) {
-                showMessage('To\'g\'ri miqdor kiriting!', 'error');
-                return;
-            }
-            
-            if (!pricePerUnit || pricePerUnit < 0) {
-                showMessage('To\'g\'ri narx kiriting!', 'error');
-                return;
-            }
-            
-            const workshops = DB.load('workshops') || [];
-            const workshop = workshops.find(w => w.id == workshopId);
-            
-            if (!workshop) {
-                showMessage('Tanlangan sex topilmadi!', 'error');
-                return;
-            }
-            
-            const incomes = DB.load('incomes') || [];
-            
-            let newId = 1;
-            if (incomes.length > 0) {
-                newId = Math.max(...incomes.map(i => i.id)) + 1;
-            }
-            
-            const totalAmount = pricePerUnit * quantity;
-            const debt = totalAmount - paid;
-            
-            const newIncome = {
-                id: newId,
-                date: date,
-                timestamp: new Date().toISOString(),
-                workshop_id: workshopId,
-                workshop_name: workshop.name,
-                product_type: productType,
-                quantity: quantity,
-                price_per_unit: pricePerUnit,
-                total_amount: totalAmount,
-                paid: paid,
-                debt: debt
-            };
-            
-            incomes.push(newIncome);
-            DB.save('incomes', incomes);
-            
-            workshop.total_purchased = (workshop.total_purchased || 0) + totalAmount;
-            workshop.total_paid = (workshop.total_paid || 0) + paid;
-            workshop.debt = (workshop.debt || 0) + debt;
-            
-            DB.save('workshops', workshops);
-            
-            // OMBOR MA'LUMOTLARINI YANGILASH
-            const storage = DB.load('storage') || [];
-            const storageKey = `${workshopId}_${productType}`;
-            let storageItem = storage.find(item => item.key === storageKey);
-            
-            if (!storageItem) {
-                storageItem = {
-                    key: storageKey,
+        const addIncome = async function() {
+            try {
+                const date = document.getElementById('incomeDate').value;
+                const workshopId = parseInt(document.getElementById('incomeWorkshop').value);
+                const productType = document.getElementById('incomeProductType').value.trim().toUpperCase();
+                const quantity = parseInt(document.getElementById('incomeQuantity').value);
+                const pricePerUnit = parseInt(document.getElementById('incomePrice').value);
+                const paid = parseInt(document.getElementById('incomePaid').value) || 0;
+                
+                if (!date) {
+                    showMessage('Sana tanlang!', 'error');
+                    return;
+                }
+                
+                if (!workshopId) {
+                    showMessage('Sex tanlang!', 'error');
+                    return;
+                }
+                
+                if (!productType) {
+                    showMessage('Halat turini kiriting!', 'error');
+                    return;
+                }
+                
+                if (!quantity || quantity <= 0) {
+                    showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                    return;
+                }
+                
+                if (!pricePerUnit || pricePerUnit < 0) {
+                    showMessage('To\'g\'ri narx kiriting!', 'error');
+                    return;
+                }
+                
+                let workshops = [...appData.workshops];
+                const workshop = workshops.find(w => w.id == workshopId);
+                
+                if (!workshop) {
+                    showMessage('Tanlangan sex topilmadi!', 'error');
+                    return;
+                }
+                
+                let incomes = [...appData.incomes];
+                
+                let newId = 1;
+                if (incomes.length > 0) {
+                    newId = Math.max(...incomes.map(i => i.id)) + 1;
+                }
+                
+                const totalAmount = pricePerUnit * quantity;
+                const debt = totalAmount - paid;
+                
+                const newIncome = {
+                    id: newId,
+                    date: date,
+                    timestamp: new Date().toISOString(),
                     workshop_id: workshopId,
                     workshop_name: workshop.name,
                     product_type: productType,
-                    total_in: 0,
-                    total_out: 0,
-                    defects: 0,
-                    workshop_returns: 0,
-                    current_balance: 0,
-                    avg_price: 0,
-                    total_cost: 0
+                    quantity: quantity,
+                    price_per_unit: pricePerUnit,
+                    total_amount: totalAmount,
+                    paid: paid,
+                    debt: debt
                 };
-                storage.push(storageItem);
-            }
-            
-            const previousTotalCost = storageItem.total_cost || 0;
-            const newTotalIn = (storageItem.total_in || 0) + quantity;
-            const newTotalCost = previousTotalCost + totalAmount;
-            
-            storageItem.total_in = newTotalIn;
-            storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
-            storageItem.avg_price = newTotalIn > 0 ? newTotalCost / newTotalIn : 0;
-            storageItem.total_cost = newTotalCost;
-            
-            DB.save('storage', storage);
-            
-            document.getElementById('incomeProductType').value = '';
-            document.getElementById('incomeQuantity').value = '';
-            document.getElementById('incomePrice').value = '';
-            document.getElementById('incomePaid').value = '';
-            
-            updateIncomePage();
-            updateDashboard();
-            updateStorage();
-            updateProductTypesForSales();
-            
-            addActivity('income', `${workshop.name} sexidan ${quantity} dona ${productType} kirim qilindi`);
-            
-            showMessage(`${quantity} dona ${productType} kirim qilindi. Sex qarzi: ${formatNumber(Math.round(debt))} so'm`);
-        };
-        
-        // Kirimni o'chirish
-        const deleteIncome = function(id) {
-            const incomes = DB.load('incomes') || [];
-            const incomeIndex = incomes.findIndex(i => i.id == id);
-            
-            if (incomeIndex === -1) {
-                showMessage('Kirim topilmadi!', 'error');
-                return;
-            }
-            
-            const income = incomes[incomeIndex];
-            
-            if (!confirm(`Ushbu kirimni o'chirishni istaysizmi? (${income.product_type} - ${income.quantity} dona)`)) {
-                return;
-            }
-            
-            const workshops = DB.load('workshops') || [];
-            const workshop = workshops.find(w => w.id == income.workshop_id);
-            
-            if (workshop) {
-                const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
-                const paid = income.paid || 0;
-                const debt = totalAmount - paid;
                 
-                workshop.total_purchased = Math.max(0, (workshop.total_purchased || 0) - totalAmount);
-                workshop.total_paid = Math.max(0, (workshop.total_paid || 0) - paid);
-                workshop.debt = Math.max(0, (workshop.debt || 0) - debt);
+                incomes.push(newIncome);
+                await DB.save('incomes', incomes);
+                appData.incomes = incomes;
                 
-                DB.save('workshops', workshops);
-            }
-            
-            const storage = DB.load('storage') || [];
-            const storageKey = `${income.workshop_id}_${income.product_type}`;
-            const storageItem = storage.find(item => item.key === storageKey);
-            
-            if (storageItem) {
-                const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
+                workshop.total_purchased = (workshop.total_purchased || 0) + totalAmount;
+                workshop.total_paid = (workshop.total_paid || 0) + paid;
+                workshop.debt = (workshop.debt || 0) + debt;
+                
+                await DB.save('workshops', workshops);
+                appData.workshops = workshops;
+                
+                // OMBOR MA'LUMOTLARINI YANGILASH
+                let storage = [...appData.storage];
+                const storageKey = `${workshopId}_${productType}`;
+                let storageItem = storage.find(item => item.key === storageKey);
+                
+                if (!storageItem) {
+                    storageItem = {
+                        key: storageKey,
+                        workshop_id: workshopId,
+                        workshop_name: workshop.name,
+                        product_type: productType,
+                        total_in: 0,
+                        total_out: 0,
+                        defects: 0,
+                        workshop_returns: 0,
+                        current_balance: 0,
+                        avg_price: 0,
+                        total_cost: 0
+                    };
+                    storage.push(storageItem);
+                }
+                
                 const previousTotalCost = storageItem.total_cost || 0;
-                const newTotalIn = Math.max(0, (storageItem.total_in || 0) - income.quantity);
-                const newTotalCost = Math.max(0, previousTotalCost - totalAmount);
+                const newTotalIn = (storageItem.total_in || 0) + quantity;
+                const newTotalCost = previousTotalCost + totalAmount;
                 
                 storageItem.total_in = newTotalIn;
-                storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - income.quantity);
+                storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
                 storageItem.avg_price = newTotalIn > 0 ? newTotalCost / newTotalIn : 0;
                 storageItem.total_cost = newTotalCost;
                 
-                if (storageItem.total_in === 0 && storageItem.total_out === 0 && storageItem.defects === 0) {
-                    const storageIndex = storage.findIndex(item => item.key === storageKey);
-                    storage.splice(storageIndex, 1);
-                }
+                await DB.save('storage', storage);
+                appData.storage = storage;
                 
-                DB.save('storage', storage);
-            }
-            
-            incomes.splice(incomeIndex, 1);
-            DB.save('incomes', incomes);
-            
-            updateIncomePage();
-            updateDashboard();
-            updateStorage();
-            updateProductTypesForSales();
-            
-            addActivity('income_delete', `${income.workshop_name} sexidan qilingan ${income.quantity} dona ${income.product_type} kirimi o'chirildi`);
-            
-            showMessage('Kirim muvaffaqiyatli o\'chirildi!');
-        };
-        
-        // Mijoz qo'shish (MODAL ORQALI)
-        const addClient = function() {
-            const name = document.getElementById('modalClientName').value.trim();
-            const phone = document.getElementById('modalClientPhone').value.trim();
-            
-            if (!name) {
-                showMessage('Mijoz nomini kiriting!', 'error');
-                return;
-            }
-            
-            const clients = DB.load('clients') || [];
-            
-            const newId = generateClientId();
-            
-            const newClient = {
-                id: newId,
-                name: name,
-                phone: phone,
-                created: new Date().toISOString(),
-                total_purchased: 0,
-                total_purchased_quantity: 0,
-                total_paid: 0,
-                defect_deductions: 0,
-                debt: 0
-            };
-            
-            clients.push(newClient);
-            DB.save('clients', clients);
-            
-            document.getElementById('addClientModal').style.display = 'none';
-            document.getElementById('modalClientName').value = '';
-            document.getElementById('modalClientPhone').value = '';
-            
-            updateClientsTab();
-            updateSalesPage();
-            
-            addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
-            
-            showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: ${newId}`);
-        };
-        
-        // Yangi mijoz qo'shish (tab ichidagi)
-        const addClientFromTab = function() {
-            const name = document.getElementById('newClientName').value.trim();
-            const phone = document.getElementById('newClientPhone').value.trim();
-            
-            if (!name) {
-                showMessage('Mijoz nomini kiriting!', 'error');
-                return;
-            }
-            
-            const clients = DB.load('clients') || [];
-            const newId = generateClientId();
-            
-            const newClient = {
-                id: newId,
-                name: name,
-                phone: phone,
-                created: new Date().toISOString(),
-                total_purchased: 0,
-                total_purchased_quantity: 0,
-                total_paid: 0,
-                defect_deductions: 0,
-                debt: 0
-            };
-            
-            clients.push(newClient);
-            DB.save('clients', clients);
-            
-            document.getElementById('newClientName').value = '';
-            document.getElementById('newClientPhone').value = '';
-            
-            updateClientsTab();
-            updateSalesPage();
-            
-            addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
-            
-            showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: <strong>${newId}</strong>`);
-        };
-        
-        // Mijozni tahrirlash
-        const editClient = function(id) {
-            const clients = DB.load('clients') || [];
-            const client = clients.find(c => c.id == id);
-            
-            if (!client) {
-                showMessage('Mijoz topilmadi!', 'error');
-                return;
-            }
-            
-            const newName = prompt('Yangi mijoz nomi:', client.name);
-            if (!newName || newName.trim() === '') {
-                showMessage('Mijoz nomi bo\'sh bo\'lishi mumkin emas!', 'error');
-                return;
-            }
-            
-            const newPhone = prompt('Yangi telefon raqami:', client.phone || '');
-            
-            client.name = newName.trim();
-            client.phone = newPhone || '';
-            
-            DB.save('clients', clients);
-            updateClientsTab();
-            updateSalesPage();
-            
-            addActivity('client_edit', `"${client.name}" mijozi o'zgartirildi`);
-            
-            showMessage('Mijoz ma\'lumotlari muvaffaqiyatli o\'zgartirildi!');
-        };
-        
-        // Mijozni o'chirish
-        const deleteClient = function(id) {
-            const clients = DB.load('clients') || [];
-            const clientIndex = clients.findIndex(c => c.id == id);
-            
-            if (clientIndex === -1) {
-                showMessage('Mijoz topilmadi!', 'error');
-                return;
-            }
-            
-            const clientName = clients[clientIndex].name;
-            
-            const sales = DB.load('sales') || [];
-            const clientSales = sales.filter(sale => sale.client_id == id);
-            
-            if (clientSales.length > 0) {
-                showMessage(`Ushbu mijozda ${clientSales.length} ta sotuv mavjud. Avval sotuvlarni o'chiring!`, 'error');
-                return;
-            }
-            
-            if (!confirm(`"${clientName}" mijoziini o'chirishni istaysizmi?`)) {
-                return;
-            }
-            
-            clients.splice(clientIndex, 1);
-            DB.save('clients', clients);
-            updateClientsTab();
-            
-            addActivity('client_delete', `"${clientName}" mijozi o'chirildi`);
-            
-            showMessage(`"${clientName}" mijozi muvaffaqiyatli o'chirildi!`);
-        };
-        
-        // Sotuv qo'shish
-        const addSale = function() {
-            const clientId = parseInt(document.getElementById('saleClient').value);
-            const date = document.getElementById('saleDate').value;
-            const productType = document.getElementById('saleProductType').value;
-            const quantity = parseInt(document.getElementById('saleQuantity').value);
-            const pricePerUnit = parseInt(document.getElementById('salePrice').value);
-            const paid = parseInt(document.getElementById('salePaid').value) || 0;
-            const note = document.getElementById('saleNote').value.trim();
-            
-            if (!clientId) {
-                showMessage('Mijoz tanlang!', 'error');
-                return;
-            }
-            
-            if (!date) {
-                showMessage('Sana tanlang!', 'error');
-                return;
-            }
-            
-            if (!productType) {
-                showMessage('Halat turini tanlang!', 'error');
-                return;
-            }
-            
-            if (!quantity || quantity <= 0) {
-                showMessage('To\'g\'ri miqdor kiriting!', 'error');
-                return;
-            }
-            
-            if (!pricePerUnit || pricePerUnit < 0) {
-                showMessage('To\'g\'ri narx kiriting!', 'error');
-                return;
-            }
-            
-            const clients = DB.load('clients') || [];
-            const client = clients.find(c => c.id == clientId);
-            
-            if (!client) {
-                showMessage('Tanlangan mijoz topilmadi!', 'error');
-                return;
-            }
-            
-            const productSelect = document.getElementById('saleProductType');
-            const selectedOption = productSelect.options[productSelect.selectedIndex];
-            const storageKey = selectedOption.value;
-            const workshopId = selectedOption.getAttribute('data-workshop-id');
-            const workshopName = selectedOption.getAttribute('data-workshop-name');
-            const actualProductType = selectedOption.getAttribute('data-product-type');
-            
-            if (!storageKey) {
-                showMessage('Halat turini tanlang!', 'error');
-                return;
-            }
-            
-            const storage = DB.load('storage') || [];
-            const storageItem = storage.find(item => item.key === storageKey);
-            
-            if (!storageItem) {
-                showMessage('Ushbu turdagi mahsulot omborda mavjud emas!', 'error');
-                return;
-            }
-            
-            if (storageItem.current_balance < quantity) {
-                showMessage(`Ombor qoldig'i yetarli emas! Mavjud: ${storageItem.current_balance} dona`, 'error');
-                return;
-            }
-            
-            const sales = DB.load('sales') || [];
-            
-            let newId = 1;
-            if (sales.length > 0) {
-                newId = Math.max(...sales.map(s => s.id)) + 1;
-            }
-            
-            const totalAmount = pricePerUnit * quantity;
-            const debt = totalAmount - paid;
-            
-            const newSale = {
-                id: newId,
-                date: date,
-                timestamp: new Date().toISOString(),
-                client_id: clientId,
-                client_name: client.name,
-                workshop_id: workshopId,
-                workshop_name: workshopName,
-                product_type: actualProductType,
-                storage_key: storageKey,
-                quantity: quantity,
-                price_per_unit: pricePerUnit,
-                total_amount: totalAmount,
-                paid: paid,
-                debt: debt,
-                note: note
-            };
-            
-            sales.push(newSale);
-            DB.save('sales', sales);
-            
-            client.total_purchased = (client.total_purchased || 0) + totalAmount;
-            client.total_purchased_quantity = (client.total_purchased_quantity || 0) + quantity;
-            client.total_paid = (client.total_paid || 0) + paid;
-            client.debt = (client.debt || 0) + debt;
-            
-            DB.save('clients', clients);
-            
-            storageItem.total_out = (storageItem.total_out || 0) + quantity;
-            storageItem.current_balance = (storageItem.current_balance || 0) - quantity;
-            
-            DB.save('storage', storage);
-            
-            document.getElementById('saleQuantity').value = '';
-            document.getElementById('salePrice').value = '';
-            document.getElementById('salePaid').value = '';
-            document.getElementById('saleNote').value = '';
-            
-            updateSalesPage();
-            updateDashboard();
-            updateStorage();
-            updateProductTypesForSales();
-            
-            addActivity('sale', `${client.name} mijoziga ${quantity} dona ${actualProductType} sotildi`);
-            
-            showMessage(`${quantity} dona ${actualProductType} sotildi. Mijoz qarzi: ${formatNumber(Math.round(debt))} so'm`);
-        };
-        
-        // Sotuvni o'chirish
-        const deleteSale = function(id) {
-            const sales = DB.load('sales') || [];
-            const saleIndex = sales.findIndex(s => s.id == id);
-            
-            if (saleIndex === -1) {
-                showMessage('Sotuv topilmadi!', 'error');
-                return;
-            }
-            
-            const sale = sales[saleIndex];
-            
-            if (!confirm(`Ushbu sotuvni o'chirishni istaysizmi? (${sale.client_name} - ${sale.product_type} - ${sale.quantity} dona)`)) {
-                return;
-            }
-            
-            const clients = DB.load('clients') || [];
-            const client = clients.find(c => c.id == sale.client_id);
-            
-            if (client) {
-                client.total_purchased = Math.max(0, (client.total_purchased || 0) - sale.total_amount);
-                client.total_purchased_quantity = Math.max(0, (client.total_purchased_quantity || 0) - sale.quantity);
-                client.total_paid = Math.max(0, (client.total_paid || 0) - sale.paid);
-                client.debt = Math.max(0, (client.debt || 0) - sale.debt);
-                DB.save('clients', clients);
-            }
-            
-            const storage = DB.load('storage') || [];
-            const storageItem = storage.find(item => item.key === sale.storage_key);
-            
-            if (storageItem) {
-                storageItem.total_out = Math.max(0, (storageItem.total_out || 0) - sale.quantity);
-                storageItem.current_balance = (storageItem.current_balance || 0) + sale.quantity;
-                DB.save('storage', storage);
-            }
-            
-            sales.splice(saleIndex, 1);
-            DB.save('sales', sales);
-            
-            updateSalesPage();
-            updateDashboard();
-            updateStorage();
-            updateProductTypesForSales();
-            
-            addActivity('sale_delete', `${sale.client_name} mijoziga qilingan ${sale.quantity} dona ${sale.product_type} sotuvi o'chirildi`);
-            
-            showMessage('Sotuv muvaffaqiyatli o\'chirildi!');
-        };
-        
-        // Brak qaydnomasi (Mijozdan brak olib kelish)
-        const processDefect = function() {
-            const clientId = parseInt(document.getElementById('defectClient').value);
-            const workshopId = parseInt(document.getElementById('defectWorkshop').value);
-            const productType = document.getElementById('defectProductType').value.trim().toUpperCase();
-            const quantity = parseInt(document.getElementById('defectQuantity').value);
-            const reason = document.getElementById('defectReason').value;
-            const note = document.getElementById('defectNote').value.trim();
-            
-            if (!clientId) {
-                showMessage('Mijoz tanlang!', 'error');
-                return;
-            }
-            
-            if (!workshopId) {
-                showMessage('Sex tanlang!', 'error');
-                return;
-            }
-            
-            if (!productType) {
-                showMessage('Halat turini kiriting!', 'error');
-                return;
-            }
-            
-            if (!quantity || quantity <= 0) {
-                showMessage('To\'g\'ri miqdor kiriting!', 'error');
-                return;
-            }
-            
-            if (!reason) {
-                showMessage('Sababni tanlang!', 'error');
-                return;
-            }
-            
-            const clients = DB.load('clients') || [];
-            const client = clients.find(c => c.id == clientId);
-            
-            if (!client) {
-                showMessage('Tanlangan mijoz topilmadi!', 'error');
-                return;
-            }
-            
-            const workshops = DB.load('workshops') || [];
-            const workshop = workshops.find(w => w.id == workshopId);
-            
-            if (!workshop) {
-                showMessage('Tanlangan sex topilmadi!', 'error');
-                return;
-            }
-            
-            // Mijozdan qancha mahsulot sotganini tekshirish
-            const sales = DB.load('sales') || [];
-            const clientSales = sales.filter(sale => sale.client_id == clientId && sale.product_type === productType && sale.workshop_id == workshopId);
-            
-            let totalSold = 0;
-            clientSales.forEach(sale => {
-                totalSold += sale.quantity || 0;
-            });
-            
-            const defects = DB.load('defects') || [];
-            const clientDefects = defects.filter(defect => defect.client_id == clientId && defect.product_type === productType && defect.workshop_id == workshopId);
-            
-            let totalDefects = 0;
-            clientDefects.forEach(defect => {
-                totalDefects += defect.quantity || 0;
-            });
-            
-            if (totalSold - totalDefects < quantity) {
-                showMessage(`Mijozdan olinayotgan brak miqdori sotilganidan ko'p! Sotilgan: ${totalSold} dona, Avval olingan brak: ${totalDefects} dona, Qolgan: ${totalSold - totalDefects} dona`, 'error');
-                return;
-            }
-            
-            const defectsDB = DB.load('defects') || [];
-            
-            let newId = 1;
-            if (defectsDB.length > 0) {
-                newId = Math.max(...defectsDB.map(d => d.id)) + 1;
-            }
-            
-            const today = new Date().toISOString().split('T')[0];
-            
-            const newDefect = {
-                id: newId,
-                date: today,
-                timestamp: new Date().toISOString(),
-                type: 'defect',
-                client_id: clientId,
-                client_name: client.name,
-                workshop_id: workshopId,
-                workshop_name: workshop.name,
-                product_type: productType,
-                quantity: quantity,
-                reason: reason,
-                note: note
-            };
-            
-            defectsDB.push(newDefect);
-            DB.save('defects', defectsDB);
-            
-            // Mijoz qarzini kamaytirish
-            const storage = DB.load('storage') || [];
-            const storageKey = `${workshopId}_${productType}`;
-            const storageItem = storage.find(item => item.key === storageKey);
-            
-            let defectAmount = 0;
-            if (storageItem) {
-                defectAmount = (storageItem.avg_price || workshop.avg_price || 0) * quantity;
+                document.getElementById('incomeProductType').value = '';
+                document.getElementById('incomeQuantity').value = '';
+                document.getElementById('incomePrice').value = '';
+                document.getElementById('incomePaid').value = '';
                 
-                // OMBORGA QO'SHISH (mijozdan olib kelingan brak omborga qo'shiladi)
-                storageItem.defects = (storageItem.defects || 0) + quantity;
-                storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
-                DB.save('storage', storage);
-            } else {
-                defectAmount = (workshop.avg_price || 0) * quantity;
-            }
-            
-            client.defect_deductions = (client.defect_deductions || 0) + defectAmount;
-            client.debt = Math.max(0, (client.debt || 0) - defectAmount);
-            DB.save('clients', clients);
-            
-            document.getElementById('defectProductType').value = '';
-            document.getElementById('defectQuantity').value = '';
-            document.getElementById('defectNote').value = '';
-            
-            updateReturnsPage();
-            updateDashboard();
-            updateStorage();
-            
-            addActivity('defect', `${client.name} mijozidan ${quantity} dona ${productType} brak olib kelindi`);
-            
-            showMessage(`${quantity} dona ${productType} brak ro'yxatga olindi. Mijoz qarzi ${formatNumber(Math.round(defectAmount))} so'm kamaytirildi.`);
-        };
-        
-        // Sexga qaytarish (Brak mahsulotni sexga qaytarish)
-        const processReturnToWorkshop = function() {
-            const workshopId = parseInt(document.getElementById('returnToWorkshopSelect').value);
-            const productKey = document.getElementById('returnToWorkshopProduct').value;
-            const quantity = parseInt(document.getElementById('returnToWorkshopQuantity').value);
-            const note = document.getElementById('returnToWorkshopNote').value.trim();
-            
-            if (!workshopId) {
-                showMessage('Sex tanlang!', 'error');
-                return;
-            }
-            
-            if (!productKey) {
-                showMessage('Halat turini tanlang!', 'error');
-                return;
-            }
-            
-            if (!quantity || quantity <= 0) {
-                showMessage('To\'g\'ri miqdor kiriting!', 'error');
-                return;
-            }
-            
-            const storage = DB.load('storage') || [];
-            const storageItem = storage.find(item => item.key === productKey);
-            
-            if (!storageItem) {
-                showMessage('Tanlangan mahsulot topilmadi!', 'error');
-                return;
-            }
-            
-            if (storageItem.defects < quantity) {
-                showMessage(`Brak miqdori yetarli emas! Mavjud brak: ${storageItem.defects} dona`, 'error');
-                return;
-            }
-            
-            const workshops = DB.load('workshops') || [];
-            const workshop = workshops.find(w => w.id == workshopId);
-            
-            if (!workshop) {
-                showMessage('Tanlangan sex topilmadi!', 'error');
-                return;
-            }
-            
-            const workshopReturns = DB.load('workshopReturns') || [];
-            
-            let newId = 1;
-            if (workshopReturns.length > 0) {
-                newId = Math.max(...workshopReturns.map(r => r.id)) + 1;
-            }
-            
-            const today = new Date().toISOString().split('T')[0];
-            
-            const newReturn = {
-                id: newId,
-                date: today,
-                timestamp: new Date().toISOString(),
-                type: 'workshop_return',
-                workshop_id: workshopId,
-                workshop_name: workshop.name,
-                product_type: storageItem.product_type,
-                quantity: quantity,
-                note: note
-            };
-            
-            workshopReturns.push(newReturn);
-            DB.save('workshopReturns', workshopReturns);
-            
-            // OMBORDAN CHIQARISH (brak mahsulot sexga qaytarilgani uchun ombordan chiqariladi)
-            storageItem.defects = Math.max(0, (storageItem.defects || 0) - quantity);
-            storageItem.workshop_returns = (storageItem.workshop_returns || 0) + quantity;
-            storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - quantity);
-            
-            DB.save('storage', storage);
-            
-            // Sex qarzini kamaytirish
-            const returnAmount = (storageItem.avg_price || workshop.avg_price || 0) * quantity;
-            workshop.defect_deductions = (workshop.defect_deductions || 0) + returnAmount;
-            workshop.debt = Math.max(0, (workshop.debt || 0) - returnAmount);
-            
-            DB.save('workshops', workshops);
-            
-            document.getElementById('returnToWorkshopQuantity').value = '';
-            document.getElementById('returnToWorkshopNote').value = '';
-            
-            updateReturnsPage();
-            updateDashboard();
-            updateStorage();
-            
-            addActivity('workshop_return', `${quantity} dona ${storageItem.product_type} brak sexga qaytarildi`);
-            
-            showMessage(`${quantity} dona ${storageItem.product_type} sexga qaytarildi. Sex qarzi ${formatNumber(Math.round(returnAmount))} so'm kamaytirildi.`);
-        };
-        
-        // Qaytishni o'chirish
-        const deleteReturn = function(id, type) {
-            if (type === 'defect') {
-                const defects = DB.load('defects') || [];
-                const defectIndex = defects.findIndex(d => d.id == id);
+                updateIncomePage();
+                updateDashboard();
+                updateStorage();
+                updateProductTypesForSales();
                 
-                if (defectIndex === -1) {
-                    showMessage('Brak topilmadi!', 'error');
+                await addActivity('income', `${workshop.name} sexidan ${quantity} dona ${productType} kirim qilindi`);
+                
+                showMessage(`${quantity} dona ${productType} kirim qilindi. Sex qarzi: ${formatNumber(Math.round(debt))} so'm`);
+            } catch (error) {
+                console.error('Kirim qo\'shishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Kirimni o'chirish
+        const deleteIncome = async function(id) {
+            try {
+                let incomes = [...appData.incomes];
+                const incomeIndex = incomes.findIndex(i => i.id == id);
+                
+                if (incomeIndex === -1) {
+                    showMessage('Kirim topilmadi!', 'error');
                     return;
                 }
                 
-                const defect = defects[defectIndex];
+                const income = incomes[incomeIndex];
                 
-                if (!confirm(`Ushbu brakni o'chirishni istaysizmi? (${defect.client_name} - ${defect.product_type} - ${defect.quantity} dona)`)) {
+                if (!confirm(`Ushbu kirimni o'chirishni istaysizmi? (${income.product_type} - ${income.quantity} dona)`)) {
                     return;
                 }
                 
-                // Mijoz qarzini qaytarish
-                const clients = DB.load('clients') || [];
-                const client = clients.find(c => c.id == defect.client_id);
+                let workshops = [...appData.workshops];
+                const workshop = workshops.find(w => w.id == income.workshop_id);
                 
-                if (client) {
-                    const storage = DB.load('storage') || [];
-                    const storageKey = `${defect.workshop_id}_${defect.product_type}`;
-                    const storageItem = storage.find(item => item.key === storageKey);
+                if (workshop) {
+                    const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
+                    const paid = income.paid || 0;
+                    const debt = totalAmount - paid;
                     
-                    let defectAmount = 0;
-                    if (storageItem) {
-                        defectAmount = (storageItem.avg_price || 0) * defect.quantity;
-                        
-                        // OMBORDAN CHIQARISH (brak olib tashlanadi)
-                        storageItem.defects = Math.max(0, (storageItem.defects || 0) - defect.quantity);
-                        storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - defect.quantity);
-                        DB.save('storage', storage);
-                    } else {
-                        const workshops = DB.load('workshops') || [];
-                        const workshop = workshops.find(w => w.id == defect.workshop_id);
-                        defectAmount = (workshop ? workshop.avg_price : 0) * defect.quantity;
-                    }
+                    workshop.total_purchased = Math.max(0, (workshop.total_purchased || 0) - totalAmount);
+                    workshop.total_paid = Math.max(0, (workshop.total_paid || 0) - paid);
+                    workshop.debt = Math.max(0, (workshop.debt || 0) - debt);
                     
-                    client.defect_deductions = Math.max(0, (client.defect_deductions || 0) - defectAmount);
-                    client.debt = (client.debt || 0) + defectAmount;
-                    DB.save('clients', clients);
+                    await DB.save('workshops', workshops);
+                    appData.workshops = workshops;
                 }
                 
-                defects.splice(defectIndex, 1);
-                DB.save('defects', defects);
-                
-            } else if (type === 'workshop_return') {
-                const workshopReturns = DB.load('workshopReturns') || [];
-                const returnIndex = workshopReturns.findIndex(r => r.id == id);
-                
-                if (returnIndex === -1) {
-                    showMessage('Qaytarish topilmadi!', 'error');
-                    return;
-                }
-                
-                const returnItem = workshopReturns[returnIndex];
-                
-                if (!confirm(`Ushbu sexga qaytarishni o'chirishni istaysizmi? (${returnItem.workshop_name} - ${returnItem.product_type} - ${returnItem.quantity} dona)`)) {
-                    return;
-                }
-                
-                // OMBORGA QAYTARISH (sexga qaytarilgan brak yana omborga qaytadi)
-                const storage = DB.load('storage') || [];
-                const storageKey = `${returnItem.workshop_id}_${returnItem.product_type}`;
+                let storage = [...appData.storage];
+                const storageKey = `${income.workshop_id}_${income.product_type}`;
                 const storageItem = storage.find(item => item.key === storageKey);
                 
                 if (storageItem) {
-                    storageItem.defects = (storageItem.defects || 0) + returnItem.quantity;
-                    storageItem.workshop_returns = Math.max(0, (storageItem.workshop_returns || 0) - returnItem.quantity);
-                    storageItem.current_balance = (storageItem.current_balance || 0) + returnItem.quantity;
-                    DB.save('storage', storage);
+                    const totalAmount = (income.price_per_unit || 0) * (income.quantity || 0);
+                    const previousTotalCost = storageItem.total_cost || 0;
+                    const newTotalIn = Math.max(0, (storageItem.total_in || 0) - income.quantity);
+                    const newTotalCost = Math.max(0, previousTotalCost - totalAmount);
                     
-                    // Sex qarzini qaytarish
-                    const workshops = DB.load('workshops') || [];
-                    const workshop = workshops.find(w => w.id == returnItem.workshop_id);
+                    storageItem.total_in = newTotalIn;
+                    storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - income.quantity);
+                    storageItem.avg_price = newTotalIn > 0 ? newTotalCost / newTotalIn : 0;
+                    storageItem.total_cost = newTotalCost;
                     
-                    if (workshop) {
-                        const returnAmount = (storageItem.avg_price || workshop.avg_price || 0) * returnItem.quantity;
-                        workshop.defect_deductions = Math.max(0, (workshop.defect_deductions || 0) - returnAmount);
-                        workshop.debt = (workshop.debt || 0) + returnAmount;
-                        DB.save('workshops', workshops);
+                    if (storageItem.total_in === 0 && storageItem.total_out === 0 && storageItem.defects === 0) {
+                        const storageIndex = storage.findIndex(item => item.key === storageKey);
+                        storage.splice(storageIndex, 1);
                     }
+                    
+                    await DB.save('storage', storage);
+                    appData.storage = storage;
                 }
                 
-                workshopReturns.splice(returnIndex, 1);
-                DB.save('workshopReturns', workshopReturns);
+                incomes.splice(incomeIndex, 1);
+                await DB.save('incomes', incomes);
+                appData.incomes = incomes;
+                
+                updateIncomePage();
+                updateDashboard();
+                updateStorage();
+                updateProductTypesForSales();
+                
+                await addActivity('income_delete', `${income.workshop_name} sexidan qilingan ${income.quantity} dona ${income.product_type} kirimi o'chirildi`);
+                
+                showMessage('Kirim muvaffaqiyatli o\'chirildi!');
+            } catch (error) {
+                console.error('Kirimni o\'chirishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
             }
-            
-            updateReturnsPage();
-            updateDashboard();
-            updateStorage();
-            
-            addActivity('return_delete', 'Brak qaydnomasi o\'chirildi');
-            
-            showMessage('Brak qaydnomasi muvaffaqiyatli o\'chirildi!');
+        };
+        
+        // Mijoz qo'shish (MODAL ORQALI)
+        const addClient = async function() {
+            try {
+                const name = document.getElementById('modalClientName').value.trim();
+                const phone = document.getElementById('modalClientPhone').value.trim();
+                
+                if (!name) {
+                    showMessage('Mijoz nomini kiriting!', 'error');
+                    return;
+                }
+                
+                let clients = [...appData.clients];
+                
+                const newId = generateClientId();
+                
+                const newClient = {
+                    id: newId,
+                    name: name,
+                    phone: phone,
+                    created: new Date().toISOString(),
+                    total_purchased: 0,
+                    total_purchased_quantity: 0,
+                    total_paid: 0,
+                    defect_deductions: 0,
+                    debt: 0
+                };
+                
+                clients.push(newClient);
+                await DB.save('clients', clients);
+                appData.clients = clients;
+                
+                document.getElementById('addClientModal').style.display = 'none';
+                document.getElementById('modalClientName').value = '';
+                document.getElementById('modalClientPhone').value = '';
+                
+                updateClientsTab();
+                updateSalesPage();
+                
+                await addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
+                
+                showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: ${newId}`);
+            } catch (error) {
+                console.error('Mijoz qo\'shishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Yangi mijoz qo'shish (tab ichidagi)
+        const addClientFromTab = async function() {
+            try {
+                const name = document.getElementById('newClientName').value.trim();
+                const phone = document.getElementById('newClientPhone').value.trim();
+                
+                if (!name) {
+                    showMessage('Mijoz nomini kiriting!', 'error');
+                    return;
+                }
+                
+                let clients = [...appData.clients];
+                const newId = generateClientId();
+                
+                const newClient = {
+                    id: newId,
+                    name: name,
+                    phone: phone,
+                    created: new Date().toISOString(),
+                    total_purchased: 0,
+                    total_purchased_quantity: 0,
+                    total_paid: 0,
+                    defect_deductions: 0,
+                    debt: 0
+                };
+                
+                clients.push(newClient);
+                await DB.save('clients', clients);
+                appData.clients = clients;
+                
+                document.getElementById('newClientName').value = '';
+                document.getElementById('newClientPhone').value = '';
+                
+                updateClientsTab();
+                updateSalesPage();
+                
+                await addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
+                
+                showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: <strong>${newId}</strong>`);
+            } catch (error) {
+                console.error('Mijoz qo\'shishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Mijozni tahrirlash
+        const editClient = async function(id) {
+            try {
+                let clients = [...appData.clients];
+                const client = clients.find(c => c.id == id);
+                
+                if (!client) {
+                    showMessage('Mijoz topilmadi!', 'error');
+                    return;
+                }
+                
+                const newName = prompt('Yangi mijoz nomi:', client.name);
+                if (!newName || newName.trim() === '') {
+                    showMessage('Mijoz nomi bo\'sh bo\'lishi mumkin emas!', 'error');
+                    return;
+                }
+                
+                const newPhone = prompt('Yangi telefon raqami:', client.phone || '');
+                
+                client.name = newName.trim();
+                client.phone = newPhone || '';
+                
+                await DB.save('clients', clients);
+                appData.clients = clients;
+                
+                updateClientsTab();
+                updateSalesPage();
+                
+                await addActivity('client_edit', `"${client.name}" mijozi o'zgartirildi`);
+                
+                showMessage('Mijoz ma\'lumotlari muvaffaqiyatli o\'zgartirildi!');
+            } catch (error) {
+                console.error('Mijozni tahrirlashda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Mijozni o'chirish
+        const deleteClient = async function(id) {
+            try {
+                let clients = [...appData.clients];
+                const clientIndex = clients.findIndex(c => c.id == id);
+                
+                if (clientIndex === -1) {
+                    showMessage('Mijoz topilmadi!', 'error');
+                    return;
+                }
+                
+                const clientName = clients[clientIndex].name;
+                
+                const sales = appData.sales;
+                const clientSales = sales.filter(sale => sale.client_id == id);
+                
+                if (clientSales.length > 0) {
+                    showMessage(`Ushbu mijozda ${clientSales.length} ta sotuv mavjud. Avval sotuvlarni o'chiring!`, 'error');
+                    return;
+                }
+                
+                if (!confirm(`"${clientName}" mijoziini o'chirishni istaysizmi?`)) {
+                    return;
+                }
+                
+                clients.splice(clientIndex, 1);
+                await DB.save('clients', clients);
+                appData.clients = clients;
+                
+                updateClientsTab();
+                
+                await addActivity('client_delete', `"${clientName}" mijozi o'chirildi`);
+                
+                showMessage(`"${clientName}" mijozi muvaffaqiyatli o'chirildi!`);
+            } catch (error) {
+                console.error('Mijozni o\'chirishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Sotuv qo'shish
+        const addSale = async function() {
+            try {
+                const clientId = parseInt(document.getElementById('saleClient').value);
+                const date = document.getElementById('saleDate').value;
+                const productType = document.getElementById('saleProductType').value;
+                const quantity = parseInt(document.getElementById('saleQuantity').value);
+                const pricePerUnit = parseInt(document.getElementById('salePrice').value);
+                const paid = parseInt(document.getElementById('salePaid').value) || 0;
+                const note = document.getElementById('saleNote').value.trim();
+                
+                if (!clientId) {
+                    showMessage('Mijoz tanlang!', 'error');
+                    return;
+                }
+                
+                if (!date) {
+                    showMessage('Sana tanlang!', 'error');
+                    return;
+                }
+                
+                if (!productType) {
+                    showMessage('Halat turini tanlang!', 'error');
+                    return;
+                }
+                
+                if (!quantity || quantity <= 0) {
+                    showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                    return;
+                }
+                
+                if (!pricePerUnit || pricePerUnit < 0) {
+                    showMessage('To\'g\'ri narx kiriting!', 'error');
+                    return;
+                }
+                
+                let clients = [...appData.clients];
+                const client = clients.find(c => c.id == clientId);
+                
+                if (!client) {
+                    showMessage('Tanlangan mijoz topilmadi!', 'error');
+                    return;
+                }
+                
+                const productSelect = document.getElementById('saleProductType');
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                const storageKey = selectedOption.value;
+                const workshopId = selectedOption.getAttribute('data-workshop-id');
+                const workshopName = selectedOption.getAttribute('data-workshop-name');
+                const actualProductType = selectedOption.getAttribute('data-product-type');
+                
+                if (!storageKey) {
+                    showMessage('Halat turini tanlang!', 'error');
+                    return;
+                }
+                
+                let storage = [...appData.storage];
+                const storageItem = storage.find(item => item.key === storageKey);
+                
+                if (!storageItem) {
+                    showMessage('Ushbu turdagi mahsulot omborda mavjud emas!', 'error');
+                    return;
+                }
+                
+                if (storageItem.current_balance < quantity) {
+                    showMessage(`Ombor qoldig'i yetarli emas! Mavjud: ${storageItem.current_balance} dona`, 'error');
+                    return;
+                }
+                
+                let sales = [...appData.sales];
+                
+                let newId = 1;
+                if (sales.length > 0) {
+                    newId = Math.max(...sales.map(s => s.id)) + 1;
+                }
+                
+                const totalAmount = pricePerUnit * quantity;
+                const debt = totalAmount - paid;
+                
+                const newSale = {
+                    id: newId,
+                    date: date,
+                    timestamp: new Date().toISOString(),
+                    client_id: clientId,
+                    client_name: client.name,
+                    workshop_id: workshopId,
+                    workshop_name: workshopName,
+                    product_type: actualProductType,
+                    storage_key: storageKey,
+                    quantity: quantity,
+                    price_per_unit: pricePerUnit,
+                    total_amount: totalAmount,
+                    paid: paid,
+                    debt: debt,
+                    note: note
+                };
+                
+                sales.push(newSale);
+                await DB.save('sales', sales);
+                appData.sales = sales;
+                
+                client.total_purchased = (client.total_purchased || 0) + totalAmount;
+                client.total_purchased_quantity = (client.total_purchased_quantity || 0) + quantity;
+                client.total_paid = (client.total_paid || 0) + paid;
+                client.debt = (client.debt || 0) + debt;
+                
+                await DB.save('clients', clients);
+                appData.clients = clients;
+                
+                storageItem.total_out = (storageItem.total_out || 0) + quantity;
+                storageItem.current_balance = (storageItem.current_balance || 0) - quantity;
+                
+                await DB.save('storage', storage);
+                appData.storage = storage;
+                
+                document.getElementById('saleQuantity').value = '';
+                document.getElementById('salePrice').value = '';
+                document.getElementById('salePaid').value = '';
+                document.getElementById('saleNote').value = '';
+                
+                updateSalesPage();
+                updateDashboard();
+                updateStorage();
+                updateProductTypesForSales();
+                
+                await addActivity('sale', `${client.name} mijoziga ${quantity} dona ${actualProductType} sotildi`);
+                
+                showMessage(`${quantity} dona ${actualProductType} sotildi. Mijoz qarzi: ${formatNumber(Math.round(debt))} so'm`);
+            } catch (error) {
+                console.error('Sotuv qo\'shishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Sotuvni o'chirish
+        const deleteSale = async function(id) {
+            try {
+                let sales = [...appData.sales];
+                const saleIndex = sales.findIndex(s => s.id == id);
+                
+                if (saleIndex === -1) {
+                    showMessage('Sotuv topilmadi!', 'error');
+                    return;
+                }
+                
+                const sale = sales[saleIndex];
+                
+                if (!confirm(`Ushbu sotuvni o'chirishni istaysizmi? (${sale.client_name} - ${sale.product_type} - ${sale.quantity} dona)`)) {
+                    return;
+                }
+                
+                let clients = [...appData.clients];
+                const client = clients.find(c => c.id == sale.client_id);
+                
+                if (client) {
+                    client.total_purchased = Math.max(0, (client.total_purchased || 0) - sale.total_amount);
+                    client.total_purchased_quantity = Math.max(0, (client.total_purchased_quantity || 0) - sale.quantity);
+                    client.total_paid = Math.max(0, (client.total_paid || 0) - sale.paid);
+                    client.debt = Math.max(0, (client.debt || 0) - sale.debt);
+                    await DB.save('clients', clients);
+                    appData.clients = clients;
+                }
+                
+                let storage = [...appData.storage];
+                const storageItem = storage.find(item => item.key === sale.storage_key);
+                
+                if (storageItem) {
+                    storageItem.total_out = Math.max(0, (storageItem.total_out || 0) - sale.quantity);
+                    storageItem.current_balance = (storageItem.current_balance || 0) + sale.quantity;
+                    await DB.save('storage', storage);
+                    appData.storage = storage;
+                }
+                
+                sales.splice(saleIndex, 1);
+                await DB.save('sales', sales);
+                appData.sales = sales;
+                
+                updateSalesPage();
+                updateDashboard();
+                updateStorage();
+                updateProductTypesForSales();
+                
+                await addActivity('sale_delete', `${sale.client_name} mijoziga qilingan ${sale.quantity} dona ${sale.product_type} sotuvi o'chirildi`);
+                
+                showMessage('Sotuv muvaffaqiyatli o\'chirildi!');
+            } catch (error) {
+                console.error('Sotuvni o\'chirishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Brak qaydnomasi (Mijozdan brak olib kelish)
+        const processDefect = async function() {
+            try {
+                const clientId = parseInt(document.getElementById('defectClient').value);
+                const workshopId = parseInt(document.getElementById('defectWorkshop').value);
+                const productType = document.getElementById('defectProductType').value.trim().toUpperCase();
+                const quantity = parseInt(document.getElementById('defectQuantity').value);
+                const reason = document.getElementById('defectReason').value;
+                const note = document.getElementById('defectNote').value.trim();
+                
+                if (!clientId) {
+                    showMessage('Mijoz tanlang!', 'error');
+                    return;
+                }
+                
+                if (!workshopId) {
+                    showMessage('Sex tanlang!', 'error');
+                    return;
+                }
+                
+                if (!productType) {
+                    showMessage('Halat turini kiriting!', 'error');
+                    return;
+                }
+                
+                if (!quantity || quantity <= 0) {
+                    showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                    return;
+                }
+                
+                if (!reason) {
+                    showMessage('Sababni tanlang!', 'error');
+                    return;
+                }
+                
+                let clients = [...appData.clients];
+                const client = clients.find(c => c.id == clientId);
+                
+                if (!client) {
+                    showMessage('Tanlangan mijoz topilmadi!', 'error');
+                    return;
+                }
+                
+                let workshops = [...appData.workshops];
+                const workshop = workshops.find(w => w.id == workshopId);
+                
+                if (!workshop) {
+                    showMessage('Tanlangan sex topilmadi!', 'error');
+                    return;
+                }
+                
+                // Mijozdan qancha mahsulot sotganini tekshirish
+                const sales = appData.sales;
+                const clientSales = sales.filter(sale => sale.client_id == clientId && sale.product_type === productType && sale.workshop_id == workshopId);
+                
+                let totalSold = 0;
+                clientSales.forEach(sale => {
+                    totalSold += sale.quantity || 0;
+                });
+                
+                const defects = appData.defects;
+                const clientDefects = defects.filter(defect => defect.client_id == clientId && defect.product_type === productType && defect.workshop_id == workshopId);
+                
+                let totalDefects = 0;
+                clientDefects.forEach(defect => {
+                    totalDefects += defect.quantity || 0;
+                });
+                
+                if (totalSold - totalDefects < quantity) {
+                    showMessage(`Mijozdan olinayotgan brak miqdori sotilganidan ko'p! Sotilgan: ${totalSold} dona, Avval olingan brak: ${totalDefects} dona, Qolgan: ${totalSold - totalDefects} dona`, 'error');
+                    return;
+                }
+                
+                let defectsDB = [...appData.defects];
+                
+                let newId = 1;
+                if (defectsDB.length > 0) {
+                    newId = Math.max(...defectsDB.map(d => d.id)) + 1;
+                }
+                
+                const today = new Date().toISOString().split('T')[0];
+                
+                const newDefect = {
+                    id: newId,
+                    date: today,
+                    timestamp: new Date().toISOString(),
+                    type: 'defect',
+                    client_id: clientId,
+                    client_name: client.name,
+                    workshop_id: workshopId,
+                    workshop_name: workshop.name,
+                    product_type: productType,
+                    quantity: quantity,
+                    reason: reason,
+                    note: note
+                };
+                
+                defectsDB.push(newDefect);
+                await DB.save('defects', defectsDB);
+                appData.defects = defectsDB;
+                
+                // Mijoz qarzini kamaytirish
+                let storage = [...appData.storage];
+                const storageKey = `${workshopId}_${productType}`;
+                const storageItem = storage.find(item => item.key === storageKey);
+                
+                let defectAmount = 0;
+                if (storageItem) {
+                    defectAmount = (storageItem.avg_price || workshop.avg_price || 0) * quantity;
+                    
+                    // OMBORGA QO'SHISH (mijozdan olib kelingan brak omborga qo'shiladi)
+                    storageItem.defects = (storageItem.defects || 0) + quantity;
+                    storageItem.current_balance = (storageItem.current_balance || 0) + quantity;
+                    await DB.save('storage', storage);
+                    appData.storage = storage;
+                } else {
+                    defectAmount = (workshop.avg_price || 0) * quantity;
+                }
+                
+                client.defect_deductions = (client.defect_deductions || 0) + defectAmount;
+                client.debt = Math.max(0, (client.debt || 0) - defectAmount);
+                await DB.save('clients', clients);
+                appData.clients = clients;
+                
+                document.getElementById('defectProductType').value = '';
+                document.getElementById('defectQuantity').value = '';
+                document.getElementById('defectNote').value = '';
+                
+                updateReturnsPage();
+                updateDashboard();
+                updateStorage();
+                
+                await addActivity('defect', `${client.name} mijozidan ${quantity} dona ${productType} brak olib kelindi`);
+                
+                showMessage(`${quantity} dona ${productType} brak ro'yxatga olindi. Mijoz qarzi ${formatNumber(Math.round(defectAmount))} so'm kamaytirildi.`);
+            } catch (error) {
+                console.error('Brak qaydnomasida xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Sexga qaytarish (Brak mahsulotni sexga qaytarish)
+        const processReturnToWorkshop = async function() {
+            try {
+                const workshopId = parseInt(document.getElementById('returnToWorkshopSelect').value);
+                const productKey = document.getElementById('returnToWorkshopProduct').value;
+                const quantity = parseInt(document.getElementById('returnToWorkshopQuantity').value);
+                const note = document.getElementById('returnToWorkshopNote').value.trim();
+                
+                if (!workshopId) {
+                    showMessage('Sex tanlang!', 'error');
+                    return;
+                }
+                
+                if (!productKey) {
+                    showMessage('Halat turini tanlang!', 'error');
+                    return;
+                }
+                
+                if (!quantity || quantity <= 0) {
+                    showMessage('To\'g\'ri miqdor kiriting!', 'error');
+                    return;
+                }
+                
+                let storage = [...appData.storage];
+                const storageItem = storage.find(item => item.key === productKey);
+                
+                if (!storageItem) {
+                    showMessage('Tanlangan mahsulot topilmadi!', 'error');
+                    return;
+                }
+                
+                if (storageItem.defects < quantity) {
+                    showMessage(`Brak miqdori yetarli emas! Mavjud brak: ${storageItem.defects} dona`, 'error');
+                    return;
+                }
+                
+                let workshops = [...appData.workshops];
+                const workshop = workshops.find(w => w.id == workshopId);
+                
+                if (!workshop) {
+                    showMessage('Tanlangan sex topilmadi!', 'error');
+                    return;
+                }
+                
+                let workshopReturns = [...appData.workshopReturns];
+                
+                let newId = 1;
+                if (workshopReturns.length > 0) {
+                    newId = Math.max(...workshopReturns.map(r => r.id)) + 1;
+                }
+                
+                const today = new Date().toISOString().split('T')[0];
+                
+                const newReturn = {
+                    id: newId,
+                    date: today,
+                    timestamp: new Date().toISOString(),
+                    type: 'workshop_return',
+                    workshop_id: workshopId,
+                    workshop_name: workshop.name,
+                    product_type: storageItem.product_type,
+                    quantity: quantity,
+                    note: note
+                };
+                
+                workshopReturns.push(newReturn);
+                await DB.save('workshopReturns', workshopReturns);
+                appData.workshopReturns = workshopReturns;
+                
+                // OMBORDAN CHIQARISH (brak mahsulot sexga qaytarilgani uchun ombordan chiqariladi)
+                storageItem.defects = Math.max(0, (storageItem.defects || 0) - quantity);
+                storageItem.workshop_returns = (storageItem.workshop_returns || 0) + quantity;
+                storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - quantity);
+                
+                await DB.save('storage', storage);
+                appData.storage = storage;
+                
+                // Sex qarzini kamaytirish
+                const returnAmount = (storageItem.avg_price || workshop.avg_price || 0) * quantity;
+                workshop.defect_deductions = (workshop.defect_deductions || 0) + returnAmount;
+                workshop.debt = Math.max(0, (workshop.debt || 0) - returnAmount);
+                
+                await DB.save('workshops', workshops);
+                appData.workshops = workshops;
+                
+                document.getElementById('returnToWorkshopQuantity').value = '';
+                document.getElementById('returnToWorkshopNote').value = '';
+                
+                updateReturnsPage();
+                updateDashboard();
+                updateStorage();
+                
+                await addActivity('workshop_return', `${quantity} dona ${storageItem.product_type} brak sexga qaytarildi`);
+                
+                showMessage(`${quantity} dona ${storageItem.product_type} sexga qaytarildi. Sex qarzi ${formatNumber(Math.round(returnAmount))} so'm kamaytirildi.`);
+            } catch (error) {
+                console.error('Sexga qaytarishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
+        };
+        
+        // Qaytishni o'chirish
+        const deleteReturn = async function(id, type) {
+            try {
+                if (type === 'defect') {
+                    let defects = [...appData.defects];
+                    const defectIndex = defects.findIndex(d => d.id == id);
+                    
+                    if (defectIndex === -1) {
+                        showMessage('Brak topilmadi!', 'error');
+                        return;
+                    }
+                    
+                    const defect = defects[defectIndex];
+                    
+                    if (!confirm(`Ushbu brakni o'chirishni istaysizmi? (${defect.client_name} - ${defect.product_type} - ${defect.quantity} dona)`)) {
+                        return;
+                    }
+                    
+                    // Mijoz qarzini qaytarish
+                    let clients = [...appData.clients];
+                    const client = clients.find(c => c.id == defect.client_id);
+                    
+                    if (client) {
+                        let storage = [...appData.storage];
+                        const storageKey = `${defect.workshop_id}_${defect.product_type}`;
+                        const storageItem = storage.find(item => item.key === storageKey);
+                        
+                        let defectAmount = 0;
+                        if (storageItem) {
+                            defectAmount = (storageItem.avg_price || 0) * defect.quantity;
+                            
+                            // OMBORDAN CHIQARISH (brak olib tashlanadi)
+                            storageItem.defects = Math.max(0, (storageItem.defects || 0) - defect.quantity);
+                            storageItem.current_balance = Math.max(0, (storageItem.current_balance || 0) - defect.quantity);
+                            await DB.save('storage', storage);
+                            appData.storage = storage;
+                        } else {
+                            const workshops = appData.workshops;
+                            const workshop = workshops.find(w => w.id == defect.workshop_id);
+                            defectAmount = (workshop ? workshop.avg_price : 0) * defect.quantity;
+                        }
+                        
+                        client.defect_deductions = Math.max(0, (client.defect_deductions || 0) - defectAmount);
+                        client.debt = (client.debt || 0) + defectAmount;
+                        await DB.save('clients', clients);
+                        appData.clients = clients;
+                    }
+                    
+                    defects.splice(defectIndex, 1);
+                    await DB.save('defects', defects);
+                    appData.defects = defects;
+                    
+                } else if (type === 'workshop_return') {
+                    let workshopReturns = [...appData.workshopReturns];
+                    const returnIndex = workshopReturns.findIndex(r => r.id == id);
+                    
+                    if (returnIndex === -1) {
+                        showMessage('Qaytarish topilmadi!', 'error');
+                        return;
+                    }
+                    
+                    const returnItem = workshopReturns[returnIndex];
+                    
+                    if (!confirm(`Ushbu sexga qaytarishni o'chirishni istaysizmi? (${returnItem.workshop_name} - ${returnItem.product_type} - ${returnItem.quantity} dona)`)) {
+                        return;
+                    }
+                    
+                    // OMBORGA QAYTARISH (sexga qaytarilgan brak yana omborga qaytadi)
+                    let storage = [...appData.storage];
+                    const storageKey = `${returnItem.workshop_id}_${returnItem.product_type}`;
+                    const storageItem = storage.find(item => item.key === storageKey);
+                    
+                    if (storageItem) {
+                        storageItem.defects = (storageItem.defects || 0) + returnItem.quantity;
+                        storageItem.workshop_returns = Math.max(0, (storageItem.workshop_returns || 0) - returnItem.quantity);
+                        storageItem.current_balance = (storageItem.current_balance || 0) + returnItem.quantity;
+                        await DB.save('storage', storage);
+                        appData.storage = storage;
+                        
+                        // Sex qarzini qaytarish
+                        let workshops = [...appData.workshops];
+                        const workshop = workshops.find(w => w.id == returnItem.workshop_id);
+                        
+                        if (workshop) {
+                            const returnAmount = (storageItem.avg_price || workshop.avg_price || 0) * returnItem.quantity;
+                            workshop.defect_deductions = Math.max(0, (workshop.defect_deductions || 0) - returnAmount);
+                            workshop.debt = (workshop.debt || 0) + returnAmount;
+                            await DB.save('workshops', workshops);
+                            appData.workshops = workshops;
+                        }
+                    }
+                    
+                    workshopReturns.splice(returnIndex, 1);
+                    await DB.save('workshopReturns', workshopReturns);
+                    appData.workshopReturns = workshopReturns;
+                }
+                
+                updateReturnsPage();
+                updateDashboard();
+                updateStorage();
+                
+                await addActivity('return_delete', 'Brak qaydnomasi o\'chirildi');
+                
+                showMessage('Brak qaydnomasi muvaffaqiyatli o\'chirildi!');
+            } catch (error) {
+                console.error('Brakni o\'chirishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
+            }
         };
         
         // Qarz to'lov modalini ko'rsatish
@@ -3698,182 +3979,198 @@
         };
         
         // Qarz to'lash
-        const processDebtPayment = function() {
-            const type = document.getElementById('debtPaymentType').value;
-            const id = parseInt(document.getElementById('debtPaymentId').value);
-            const amount = parseInt(document.getElementById('debtPaymentAmount').value);
-            const date = document.getElementById('debtPaymentDate').value;
-            const note = document.getElementById('debtPaymentNote').value.trim();
-            
-            if (!amount || amount <= 0) {
-                showMessage('To\'g\'ri summa kiriting!', 'error');
-                return;
-            }
-            
-            if (!date) {
-                showMessage('Sana tanlang!', 'error');
-                return;
-            }
-            
-            const payments = DB.load('payments') || [];
-            
-            let newId = 1;
-            if (payments.length > 0) {
-                newId = Math.max(...payments.map(p => p.id)) + 1;
-            }
-            
-            const newPayment = {
-                id: newId,
-                date: date,
-                timestamp: new Date().toISOString(),
-                type: type,
-                amount: amount,
-                note: note || `${type === 'workshop' ? 'Sex' : 'Mijoz'} qarzini to'lash`
-            };
-            
-            if (type === 'workshop') {
-                newPayment.workshop_id = id;
-                const workshops = DB.load('workshops') || [];
-                const workshop = workshops.find(w => w.id == id);
+        const processDebtPayment = async function() {
+            try {
+                const type = document.getElementById('debtPaymentType').value;
+                const id = parseInt(document.getElementById('debtPaymentId').value);
+                const amount = parseInt(document.getElementById('debtPaymentAmount').value);
+                const date = document.getElementById('debtPaymentDate').value;
+                const note = document.getElementById('debtPaymentNote').value.trim();
                 
-                if (workshop) {
-                    if (amount > workshop.debt) {
-                        showMessage(`To'lov summasi qarzdan ko'p! Maksimal: ${formatNumber(Math.round(workshop.debt))} so'm`, 'error');
-                        return;
-                    }
-                    
-                    workshop.total_paid = (workshop.total_paid || 0) + amount;
-                    workshop.debt = Math.max(0, (workshop.debt || 0) - amount);
-                    
-                    DB.save('workshops', workshops);
-                    
-                    addActivity('payment', `${workshop.name} sexiga ${formatNumber(amount)} so'm to'lov qilindi`);
+                if (!amount || amount <= 0) {
+                    showMessage('To\'g\'ri summa kiriting!', 'error');
+                    return;
                 }
-            } else if (type === 'client') {
-                newPayment.client_id = id;
-                const clients = DB.load('clients') || [];
-                const client = clients.find(c => c.id == id);
                 
-                if (client) {
-                    if (amount > client.debt) {
-                        showMessage(`To'lov summasi qarzdan ko'p! Maksimal: ${formatNumber(Math.round(client.debt))} so'm`, 'error');
-                        return;
-                    }
-                    
-                    client.total_paid = (client.total_paid || 0) + amount;
-                    client.debt = Math.max(0, (client.debt || 0) - amount);
-                    
-                    DB.save('clients', clients);
-                    
-                    addActivity('payment', `${client.name} mijozidan ${formatNumber(amount)} so'm to'lov olindi`);
+                if (!date) {
+                    showMessage('Sana tanlang!', 'error');
+                    return;
                 }
+                
+                let payments = [...appData.payments];
+                
+                let newId = 1;
+                if (payments.length > 0) {
+                    newId = Math.max(...payments.map(p => p.id)) + 1;
+                }
+                
+                const newPayment = {
+                    id: newId,
+                    date: date,
+                    timestamp: new Date().toISOString(),
+                    type: type,
+                    amount: amount,
+                    note: note || `${type === 'workshop' ? 'Sex' : 'Mijoz'} qarzini to'lash`
+                };
+                
+                if (type === 'workshop') {
+                    newPayment.workshop_id = id;
+                    let workshops = [...appData.workshops];
+                    const workshop = workshops.find(w => w.id == id);
+                    
+                    if (workshop) {
+                        if (amount > workshop.debt) {
+                            showMessage(`To'lov summasi qarzdan ko'p! Maksimal: ${formatNumber(Math.round(workshop.debt))} so'm`, 'error');
+                            return;
+                        }
+                        
+                        workshop.total_paid = (workshop.total_paid || 0) + amount;
+                        workshop.debt = Math.max(0, (workshop.debt || 0) - amount);
+                        
+                        await DB.save('workshops', workshops);
+                        appData.workshops = workshops;
+                        
+                        await addActivity('payment', `${workshop.name} sexiga ${formatNumber(amount)} so'm to'lov qilindi`);
+                    }
+                } else if (type === 'client') {
+                    newPayment.client_id = id;
+                    let clients = [...appData.clients];
+                    const client = clients.find(c => c.id == id);
+                    
+                    if (client) {
+                        if (amount > client.debt) {
+                            showMessage(`To'lov summasi qarzdan ko'p! Maksimal: ${formatNumber(Math.round(client.debt))} so'm`, 'error');
+                            return;
+                        }
+                        
+                        client.total_paid = (client.total_paid || 0) + amount;
+                        client.debt = Math.max(0, (client.debt || 0) - amount);
+                        
+                        await DB.save('clients', clients);
+                        appData.clients = clients;
+                        
+                        await addActivity('payment', `${client.name} mijozidan ${formatNumber(amount)} so'm to'lov olindi`);
+                    }
+                }
+                
+                payments.push(newPayment);
+                await DB.save('payments', payments);
+                appData.payments = payments;
+                
+                document.getElementById('debtPaymentModal').style.display = 'none';
+                document.getElementById('debtPaymentAmount').value = '';
+                document.getElementById('debtPaymentNote').value = '';
+                
+                updateDebtsPage();
+                updateDashboard();
+                
+                if (currentUserType === 'client' && currentUser && currentUser.id == id) {
+                    updateClientPage();
+                }
+                
+                showMessage(`${formatNumber(amount)} so'm to'lov muvaffaqiyatli saqlandi!`);
+            } catch (error) {
+                console.error('Qarz to\'lashda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
             }
-            
-            payments.push(newPayment);
-            DB.save('payments', payments);
-            
-            document.getElementById('debtPaymentModal').style.display = 'none';
-            document.getElementById('debtPaymentAmount').value = '';
-            document.getElementById('debtPaymentNote').value = '';
-            
-            updateDebtsPage();
-            updateDashboard();
-            
-            if (currentUserType === 'client' && currentUser && currentUser.id == id) {
-                updateClientPage();
-            }
-            
-            showMessage(`${formatNumber(amount)} so'm to'lov muvaffaqiyatli saqlandi!`);
         };
         
         // To'lov qilish (eski usul)
-        const processPayment = function() {
-            const paymentType = document.getElementById('paymentType').value;
-            const workshopId = paymentType === 'workshop' ? parseInt(document.getElementById('paymentWorkshop').value) : null;
-            const clientId = paymentType === 'client' ? parseInt(document.getElementById('paymentClient').value) : null;
-            const amount = parseInt(document.getElementById('paymentAmount').value);
-            const date = document.getElementById('paymentDate').value;
-            const note = document.getElementById('paymentNote').value.trim();
-            
-            if (!paymentType) {
-                showMessage('To\'lov turini tanlang!', 'error');
-                return;
-            }
-            
-            if (paymentType === 'workshop' && !workshopId) {
-                showMessage('Sex tanlang!', 'error');
-                return;
-            }
-            
-            if (paymentType === 'client' && !clientId) {
-                showMessage('Mijoz tanlang!', 'error');
-                return;
-            }
-            
-            if (!amount || amount <= 0) {
-                showMessage('To\'g\'ri summa kiriting!', 'error');
-                return;
-            }
-            
-            if (!date) {
-                showMessage('Sana tanlang!', 'error');
-                return;
-            }
-            
-            const payments = DB.load('payments') || [];
-            
-            let newId = 1;
-            if (payments.length > 0) {
-                newId = Math.max(...payments.map(p => p.id)) + 1;
-            }
-            
-            const newPayment = {
-                id: newId,
-                date: date,
-                timestamp: new Date().toISOString(),
-                type: paymentType,
-                workshop_id: workshopId,
-                client_id: clientId,
-                amount: amount,
-                note: note
-            };
-            
-            payments.push(newPayment);
-            DB.save('payments', payments);
-            
-            if (paymentType === 'workshop') {
-                const workshops = DB.load('workshops') || [];
-                const workshop = workshops.find(w => w.id == workshopId);
+        const processPayment = async function() {
+            try {
+                const paymentType = document.getElementById('paymentType').value;
+                const workshopId = paymentType === 'workshop' ? parseInt(document.getElementById('paymentWorkshop').value) : null;
+                const clientId = paymentType === 'client' ? parseInt(document.getElementById('paymentClient').value) : null;
+                const amount = parseInt(document.getElementById('paymentAmount').value);
+                const date = document.getElementById('paymentDate').value;
+                const note = document.getElementById('paymentNote').value.trim();
                 
-                if (workshop) {
-                    workshop.total_paid = (workshop.total_paid || 0) + amount;
-                    workshop.debt = Math.max(0, (workshop.debt || 0) - amount);
-                    
-                    DB.save('workshops', workshops);
-                    
-                    addActivity('payment', `${workshop.name} sexiga ${formatNumber(amount)} so'm to'lov qilindi`);
+                if (!paymentType) {
+                    showMessage('To\'lov turini tanlang!', 'error');
+                    return;
                 }
-            } else if (paymentType === 'client') {
-                const clients = DB.load('clients') || [];
-                const client = clients.find(c => c.id == clientId);
                 
-                if (client) {
-                    client.total_paid = (client.total_paid || 0) + amount;
-                    client.debt = Math.max(0, (client.debt || 0) - amount);
-                    
-                    DB.save('clients', clients);
-                    
-                    addActivity('payment', `${client.name} mijozidan ${formatNumber(amount)} so'm to'lov olindi`);
+                if (paymentType === 'workshop' && !workshopId) {
+                    showMessage('Sex tanlang!', 'error');
+                    return;
                 }
+                
+                if (paymentType === 'client' && !clientId) {
+                    showMessage('Mijoz tanlang!', 'error');
+                    return;
+                }
+                
+                if (!amount || amount <= 0) {
+                    showMessage('To\'g\'ri summa kiriting!', 'error');
+                    return;
+                }
+                
+                if (!date) {
+                    showMessage('Sana tanlang!', 'error');
+                    return;
+                }
+                
+                let payments = [...appData.payments];
+                
+                let newId = 1;
+                if (payments.length > 0) {
+                    newId = Math.max(...payments.map(p => p.id)) + 1;
+                }
+                
+                const newPayment = {
+                    id: newId,
+                    date: date,
+                    timestamp: new Date().toISOString(),
+                    type: paymentType,
+                    workshop_id: workshopId,
+                    client_id: clientId,
+                    amount: amount,
+                    note: note
+                };
+                
+                payments.push(newPayment);
+                await DB.save('payments', payments);
+                appData.payments = payments;
+                
+                if (paymentType === 'workshop') {
+                    let workshops = [...appData.workshops];
+                    const workshop = workshops.find(w => w.id == workshopId);
+                    
+                    if (workshop) {
+                        workshop.total_paid = (workshop.total_paid || 0) + amount;
+                        workshop.debt = Math.max(0, (workshop.debt || 0) - amount);
+                        
+                        await DB.save('workshops', workshops);
+                        appData.workshops = workshops;
+                        
+                        await addActivity('payment', `${workshop.name} sexiga ${formatNumber(amount)} so'm to'lov qilindi`);
+                    }
+                } else if (paymentType === 'client') {
+                    let clients = [...appData.clients];
+                    const client = clients.find(c => c.id == clientId);
+                    
+                    if (client) {
+                        client.total_paid = (client.total_paid || 0) + amount;
+                        client.debt = Math.max(0, (client.debt || 0) - amount);
+                        
+                        await DB.save('clients', clients);
+                        appData.clients = clients;
+                        
+                        await addActivity('payment', `${client.name} mijozidan ${formatNumber(amount)} so'm to'lov olindi`);
+                    }
+                }
+                
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('paymentNote').value = '';
+                
+                updateDebtsPage();
+                updateDashboard();
+                
+                showMessage(`${formatNumber(amount)} so'm to'lov muvaffaqiyatli saqlandi!`);
+            } catch (error) {
+                console.error('To\'lov qilishda xatolik:', error);
+                showMessage('Xatolik yuz berdi!', 'error');
             }
-            
-            document.getElementById('paymentAmount').value = '';
-            document.getElementById('paymentNote').value = '';
-            
-            updateDebtsPage();
-            updateDashboard();
-            
-            showMessage(`${formatNumber(amount)} so'm to'lov muvaffaqiyatli saqlandi!`);
         };
         
         // Kirish funksiyasi
@@ -3920,7 +4217,7 @@
                 
                 const clientId = parseInt(userIdInput);
                 
-                const clients = DB.load('clients') || [];
+                const clients = appData.clients;
                 const client = clients.find(c => c.id === clientId);
                 
                 if (!client) {
@@ -3981,274 +4278,282 @@
         };
         
         // DOM yuklanganidan so'ng
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeData();
-            
-            // Tema yuklash
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                currentTheme = 'dark';
-                document.body.setAttribute('data-theme', 'dark');
-                document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
-            }
-            
-            // Bugungi sanani default qilish
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('input[type="date"]').forEach(input => {
-                if (!input.value) {
-                    input.value = today;
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initializeData();
+                
+                // Tema yuklash
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    currentTheme = 'dark';
+                    document.body.setAttribute('data-theme', 'dark');
+                    document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
                 }
-            });
-            
-            // Foydalanuvchi turini tanlash
-            document.getElementById('clientBtn').addEventListener('click', function() {
-                document.getElementById('clientBtn').classList.add('active');
-                document.getElementById('adminBtn').classList.remove('active');
-                document.getElementById('idLabel').textContent = 'Mijoz ID raqamini kiriting (6 xonali)';
-                document.getElementById('userId').placeholder = 'Masalan: 482931';
-            });
-            
-            document.getElementById('adminBtn').addEventListener('click', function() {
-                document.getElementById('adminBtn').classList.add('active');
-                document.getElementById('clientBtn').classList.remove('active');
-                document.getElementById('idLabel').textContent = 'Sotuvchi parolini kiriting';
-                document.getElementById('userId').placeholder = '*****';
-            });
-            
-            // Kirish tugmasi
-            document.getElementById('loginButton').addEventListener('click', login);
-            
-            document.getElementById('userId').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
-            
-            // Chiqish tugmasi
-            document.getElementById('logoutBtn').addEventListener('click', logout);
-            
-            // Bosh sahifaga qaytish tugmasi
-            
-            
-            // Navigatsiya tugmalari
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const pageId = this.getAttribute('data-page');
-                    updatePage(pageId);
+                
+                // Bugungi sanani default qilish
+                const today = new Date().toISOString().split('T')[0];
+                document.querySelectorAll('input[type="date"]').forEach(input => {
+                    if (!input.value) {
+                        input.value = today;
+                    }
                 });
-            });
-            
-            // Tab tugmalari
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    
-                    this.parentElement.querySelectorAll('.tab-btn').forEach(tb => {
-                        tb.classList.remove('active');
+                
+                // Foydalanuvchi turini tanlash
+                document.getElementById('clientBtn').addEventListener('click', function() {
+                    document.getElementById('clientBtn').classList.add('active');
+                    document.getElementById('adminBtn').classList.remove('active');
+                    document.getElementById('idLabel').textContent = 'Mijoz ID raqamini kiriting (6 xonali)';
+                    document.getElementById('userId').placeholder = 'Masalan: 482931';
+                });
+                
+                document.getElementById('adminBtn').addEventListener('click', function() {
+                    document.getElementById('adminBtn').classList.add('active');
+                    document.getElementById('clientBtn').classList.remove('active');
+                    document.getElementById('idLabel').textContent = 'Sotuvchi parolini kiriting';
+                    document.getElementById('userId').placeholder = '*****';
+                });
+                
+                // Kirish tugmasi
+                document.getElementById('loginButton').addEventListener('click', login);
+                
+                document.getElementById('userId').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+                
+                // Chiqish tugmasi
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+                
+                // Navigatsiya tugmalari
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const pageId = this.getAttribute('data-page');
+                        updatePage(pageId);
                     });
-                    
-                    const tabContents = this.closest('.card').querySelectorAll('.tab-content');
-                    tabContents.forEach(tc => {
-                        tc.classList.remove('active');
+                });
+                
+                // Tab tugmalari
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const tabId = this.getAttribute('data-tab');
+                        
+                        this.parentElement.querySelectorAll('.tab-btn').forEach(tb => {
+                            tb.classList.remove('active');
+                        });
+                        
+                        const tabContents = this.closest('.card').querySelectorAll('.tab-content');
+                        tabContents.forEach(tc => {
+                            tc.classList.remove('active');
+                        });
+                        
+                        this.classList.add('active');
+                        const tabContent = document.getElementById(tabId);
+                        if (tabContent) {
+                            tabContent.classList.add('active');
+                        }
+                        
+                        // Agar mijozlar tab'iga o'tilsa, uni yangilash
+                        if (tabId === 'clientsListTab') {
+                            setTimeout(updateClientsTab, 100);
+                        }
                     });
-                    
-                    this.classList.add('active');
-                    const tabContent = document.getElementById(tabId);
-                    if (tabContent) {
-                        tabContent.classList.add('active');
-                    }
-                    
-                    // Agar mijozlar tab'iga o'tilsa, uni yangilash
-                    if (tabId === 'clientsListTab') {
-                        setTimeout(updateClientsTab, 100);
-                    }
                 });
-            });
-            
-            // Modal yopish
-            document.querySelectorAll('.close-modal, #closeMessageModal').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.getElementById('messageModal').style.display = 'none';
+                
+                // Modal yopish
+                document.querySelectorAll('.close-modal, #closeMessageModal').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.getElementById('messageModal').style.display = 'none';
+                    });
                 });
-            });
-            
-            document.getElementById('messageModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-            
-            // Qarz to'lov modali
-            document.getElementById('cancelDebtPayment').addEventListener('click', function() {
-                document.getElementById('debtPaymentModal').style.display = 'none';
-            });
-            
-            document.getElementById('debtPaymentModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-            
-            document.getElementById('confirmDebtPayment').addEventListener('click', processDebtPayment);
-            
-            // Mijoz qo'shish modali
-            document.getElementById('cancelAddClient').addEventListener('click', function() {
-                document.getElementById('addClientModal').style.display = 'none';
-            });
-            
-            document.getElementById('addClientModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-            
-            document.getElementById('saveModalClientBtn').addEventListener('click', addClient);
-            
-            // Tema tugmasi
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-            
-            // Sex qo'shish tugmasi
-            document.getElementById('addWorkshopBtn').addEventListener('click', addWorkshop);
-            
-            // Kirim qo'shish tugmasi
-            document.getElementById('addIncomeBtn').addEventListener('click', addIncome);
-            
-            // Yangi mijoz tugmasi (modal ochish)
-            document.getElementById('newClientBtn').addEventListener('click', function() {
-                document.getElementById('modalClientName').value = '';
-                document.getElementById('modalClientPhone').value = '';
-                document.getElementById('addClientModal').style.display = 'flex';
-            });
-            
-            // Mijoz qo'shish tugmasi (tab ichidagi)
-            document.getElementById('saveNewClientBtn').addEventListener('click', addClientFromTab);
-            
-            // Sotuv qo'shish tugmasi
-            document.getElementById('addSaleBtn').addEventListener('click', addSale);
-            
-            // Brak qaydnomasi tugmasi
-            document.getElementById('processDefectBtn').addEventListener('click', processDefect);
-            
-            // Sexga qaytarish tugmasi
-            document.getElementById('processReturnToWorkshopBtn').addEventListener('click', processReturnToWorkshop);
-            
-            // To'lov qilish tugmasi
-            document.getElementById('processPaymentBtn').addEventListener('click', processPayment);
-            
-            // To'lov turini o'zgartirganda
-            const paymentTypeSelect = document.getElementById('paymentType');
-            if (paymentTypeSelect) {
-                paymentTypeSelect.addEventListener('change', function() {
-                    const type = this.value;
-                    
-                    if (type === 'workshop') {
-                        document.getElementById('paymentWorkshopGroup').style.display = 'block';
-                        document.getElementById('paymentClientGroup').style.display = 'none';
-                    } else if (type === 'client') {
-                        document.getElementById('paymentWorkshopGroup').style.display = 'none';
-                        document.getElementById('paymentClientGroup').style.display = 'block';
-                    } else {
-                        document.getElementById('paymentWorkshopGroup').style.display = 'none';
-                        document.getElementById('paymentClientGroup').style.display = 'none';
+                
+                document.getElementById('messageModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
                     }
                 });
+                
+                // Qarz to'lov modali
+                document.getElementById('cancelDebtPayment').addEventListener('click', function() {
+                    document.getElementById('debtPaymentModal').style.display = 'none';
+                });
+                
+                document.getElementById('debtPaymentModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('confirmDebtPayment').addEventListener('click', processDebtPayment);
+                
+                // Mijoz qo'shish modali
+                document.getElementById('cancelAddClient').addEventListener('click', function() {
+                    document.getElementById('addClientModal').style.display = 'none';
+                });
+                
+                document.getElementById('addClientModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('saveModalClientBtn').addEventListener('click', addClient);
+                
+                // Tema tugmasi
+                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                
+                // Sex qo'shish tugmasi
+                document.getElementById('addWorkshopBtn').addEventListener('click', addWorkshop);
+                
+                // Kirim qo'shish tugmasi
+                document.getElementById('addIncomeBtn').addEventListener('click', addIncome);
+                
+                // Yangi mijoz tugmasi (modal ochish)
+                document.getElementById('newClientBtn').addEventListener('click', function() {
+                    document.getElementById('modalClientName').value = '';
+                    document.getElementById('modalClientPhone').value = '';
+                    document.getElementById('addClientModal').style.display = 'flex';
+                });
+                
+                // Mijoz qo'shish tugmasi (tab ichidagi)
+                document.getElementById('saveNewClientBtn').addEventListener('click', addClientFromTab);
+                
+                // Sotuv qo'shish tugmasi
+                document.getElementById('addSaleBtn').addEventListener('click', addSale);
+                
+                // Brak qaydnomasi tugmasi
+                document.getElementById('processDefectBtn').addEventListener('click', processDefect);
+                
+                // Sexga qaytarish tugmasi
+                document.getElementById('processReturnToWorkshopBtn').addEventListener('click', processReturnToWorkshop);
+                
+                // To'lov qilish tugmasi
+                document.getElementById('processPaymentBtn').addEventListener('click', processPayment);
+                
+                // To'lov turini o'zgartirganda
+                const paymentTypeSelect = document.getElementById('paymentType');
+                if (paymentTypeSelect) {
+                    paymentTypeSelect.addEventListener('change', function() {
+                        const type = this.value;
+                        
+                        if (type === 'workshop') {
+                            document.getElementById('paymentWorkshopGroup').style.display = 'block';
+                            document.getElementById('paymentClientGroup').style.display = 'none';
+                        } else if (type === 'client') {
+                            document.getElementById('paymentWorkshopGroup').style.display = 'none';
+                            document.getElementById('paymentClientGroup').style.display = 'block';
+                        } else {
+                            document.getElementById('paymentWorkshopGroup').style.display = 'none';
+                            document.getElementById('paymentClientGroup').style.display = 'none';
+                        }
+                    });
+                }
+                
+                // Sexga qaytarishda mahsulot turini tanlanganda maksimal miqdorni ko'rsatish
+                const returnToWorkshopProductSelect = document.getElementById('returnToWorkshopProduct');
+                if (returnToWorkshopProductSelect) {
+                    returnToWorkshopProductSelect.addEventListener('change', function() {
+                        const productKey = this.value;
+                        
+                        if (!productKey) {
+                            document.getElementById('maxReturnToWorkshopQuantity').textContent = '0 dona';
+                            return;
+                        }
+                        
+                        const storage = appData.storage;
+                        const storageItem = storage.find(item => item.key === productKey);
+                        
+                        if (storageItem) {
+                            document.getElementById('maxReturnToWorkshopQuantity').textContent = storageItem.defects + ' dona';
+                        } else {
+                            document.getElementById('maxReturnToWorkshopQuantity').textContent = '0 dona';
+                        }
+                    });
+                }
+                
+                // Halat turi tanlanganda ombor qoldig'ini ko'rsatish
+                const saleProductTypeSelect = document.getElementById('saleProductType');
+                if (saleProductTypeSelect) {
+                    saleProductTypeSelect.addEventListener('change', function() {
+                        const productType = this.value;
+                        
+                        if (!productType) {
+                            document.getElementById('productStockInfo').textContent = '0 dona';
+                            return;
+                        }
+                        
+                        const storage = appData.storage;
+                        const storageItem = storage.find(item => item.key === productType);
+                        
+                        if (storageItem) {
+                            document.getElementById('productStockInfo').textContent = storageItem.current_balance + ' dona';
+                        } else {
+                            document.getElementById('productStockInfo').textContent = '0 dona';
+                        }
+                    });
+                }
+                
+                // Sotuv hisobotini yangilash
+                const updateSaleReport = function() {
+                    const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
+                    const pricePerUnit = parseInt(document.getElementById('salePrice').value) || 0;
+                    const paid = parseInt(document.getElementById('salePaid').value) || 0;
+                    
+                    const totalAmount = quantity * pricePerUnit;
+                    const debt = totalAmount - paid;
+                    
+                    const productType = document.getElementById('saleProductType').value;
+                    let estimatedProfit = 0;
+                    
+                    if (productType) {
+                        const storage = appData.storage;
+                        const storageItem = storage.find(item => item.key === productType);
+                        
+                        if (storageItem) {
+                            const avgCost = storageItem.avg_price || 0;
+                            estimatedProfit = (pricePerUnit - avgCost) * quantity;
+                        }
+                    }
+                    
+                    document.getElementById('saleTotalQuantity').textContent = formatNumber(quantity) + ' dona';
+                    document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so`m';
+                    document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so`m';
+                    document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so`m';
+                    document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so`m';
+                };
+                
+                const saleQuantityInput = document.getElementById('saleQuantity');
+                const salePriceInput = document.getElementById('salePrice');
+                const salePaidInput = document.getElementById('salePaid');
+                
+                if (saleQuantityInput) saleQuantityInput.addEventListener('input', updateSaleReport);
+                if (salePriceInput) salePriceInput.addEventListener('input', updateSaleReport);
+                if (salePaidInput) salePaidInput.addEventListener('input', updateSaleReport);
+                
+                // Global funksiyalarni window obyektiga qo'shish
+                window.editWorkshop = editWorkshop;
+                window.deleteWorkshop = deleteWorkshop;
+                window.editClient = editClient;
+                window.deleteClient = deleteClient;
+                window.deleteSale = deleteSale;
+                window.deleteReturn = deleteReturn;
+                window.deleteIncome = deleteIncome;
+                window.showDebtPaymentModal = showDebtPaymentModal;
+                
+                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.0 (Firebase bilan)');
+                console.log('Tizim mobil qurilmalar uchun moslashtirildi. Admin paroli: 2');
+                console.log('Ma\'lumotlar Firebase\'da saqlanadi - barcha qurilmalardan kirganda bir xil ma\'lumotlar ko\'rinadi');
+                console.log('Firebase Realtime Database ishlatilmoqda');
+                
+                // Oflayn ma'lumotlarni sinxronlash
+                setTimeout(() => {
+                    DB.syncOfflineData();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Dasturni yuklashda xatolik:', error);
+                showMessage('Dasturni yuklashda xatolik yuz berdi! Iltimos, sahifani yangilang.', 'error');
             }
-            
-            // Sexga qaytarishda mahsulot turini tanlanganda maksimal miqdorni ko'rsatish
-            const returnToWorkshopProductSelect = document.getElementById('returnToWorkshopProduct');
-            if (returnToWorkshopProductSelect) {
-                returnToWorkshopProductSelect.addEventListener('change', function() {
-                    const productKey = this.value;
-                    
-                    if (!productKey) {
-                        document.getElementById('maxReturnToWorkshopQuantity').textContent = '0 dona';
-                        return;
-                    }
-                    
-                    const storage = DB.load('storage') || [];
-                    const storageItem = storage.find(item => item.key === productKey);
-                    
-                    if (storageItem) {
-                        document.getElementById('maxReturnToWorkshopQuantity').textContent = storageItem.defects + ' dona';
-                    } else {
-                        document.getElementById('maxReturnToWorkshopQuantity').textContent = '0 dona';
-                    }
-                });
-            }
-            
-            // Halat turi tanlanganda ombor qoldig'ini ko'rsatish
-            const saleProductTypeSelect = document.getElementById('saleProductType');
-            if (saleProductTypeSelect) {
-                saleProductTypeSelect.addEventListener('change', function() {
-                    const productType = this.value;
-                    
-                    if (!productType) {
-                        document.getElementById('productStockInfo').textContent = '0 dona';
-                        return;
-                    }
-                    
-                    const storage = DB.load('storage') || [];
-                    const storageItem = storage.find(item => item.key === productType);
-                    
-                    if (storageItem) {
-                        document.getElementById('productStockInfo').textContent = storageItem.current_balance + ' dona';
-                    } else {
-                        document.getElementById('productStockInfo').textContent = '0 dona';
-                    }
-                });
-            }
-            
-            // Sotuv hisobotini yangilash
-            const updateSaleReport = function() {
-                const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
-                const pricePerUnit = parseInt(document.getElementById('salePrice').value) || 0;
-                const paid = parseInt(document.getElementById('salePaid').value) || 0;
-                
-                const totalAmount = quantity * pricePerUnit;
-                const debt = totalAmount - paid;
-                
-                const productType = document.getElementById('saleProductType').value;
-                let estimatedProfit = 0;
-                
-                if (productType) {
-                    const storage = DB.load('storage') || [];
-                    const storageItem = storage.find(item => item.key === productType);
-                    
-                    if (storageItem) {
-                        const avgCost = storageItem.avg_price || 0;
-                        estimatedProfit = (pricePerUnit - avgCost) * quantity;
-                    }
-                }
-                
-                document.getElementById('saleTotalQuantity').textContent = formatNumber(quantity) + ' dona';
-                document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so`m';
-                document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so`m';
-                document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so`m';
-                document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so`m';
-            };
-            
-            const saleQuantityInput = document.getElementById('saleQuantity');
-            const salePriceInput = document.getElementById('salePrice');
-            const salePaidInput = document.getElementById('salePaid');
-            
-            if (saleQuantityInput) saleQuantityInput.addEventListener('input', updateSaleReport);
-            if (salePriceInput) salePriceInput.addEventListener('input', updateSaleReport);
-            if (salePaidInput) salePaidInput.addEventListener('input', updateSaleReport);
-            
-            // Global funksiyalarni window obyektiga qo'shish
-            window.editWorkshop = editWorkshop;
-            window.deleteWorkshop = deleteWorkshop;
-            window.editClient = editClient;
-            window.deleteClient = deleteClient;
-            window.deleteSale = deleteSale;
-            window.deleteReturn = deleteReturn;
-            window.deleteIncome = deleteIncome;
-            window.showDebtPaymentModal = showDebtPaymentModal;
-            
-            console.log('Halat Savdosi Tizimi yuklandi. Versiya: 5.2 (Mijozlar qismi to\'liq ishlaydi)');
-            console.log('Tizim mobil qurilmalar uchun moslashtirildi. Admin paroli: 2');
-            console.log('Bosh sahifa tugmasi tepada, tema tugmasi pastda');
-            console.log('Mijozlar qismi to\'liq ishlaydi - barcha mijozlar ma\'lumotlari ko\'rinadi');
         });
     </script>
 </body>
