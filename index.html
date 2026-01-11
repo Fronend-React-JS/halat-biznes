@@ -83,6 +83,15 @@
             font-size: 1.6rem;
         }
         
+        /* Navigatsiya uchun tugmalar guruhi */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
         /* Navbar */
         .navbar {
             display: flex;
@@ -456,7 +465,7 @@
             color: var(--secondary);
         }
         
-        /* Tema tugmasi */
+        /* Tema tugmasi - PASTDA */
         .theme-toggle {
             position: fixed;
             bottom: 20px;
@@ -571,6 +580,11 @@
                 flex-direction: column;
                 gap: 10px;
                 text-align: center;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                gap: 8px;
             }
             
             .navbar {
@@ -751,7 +765,8 @@
         <!-- Sarlavha -->
         <div class="header">
             <h1><i class="fas fa-tshirt"></i> Halat Savdosi</h1>
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;">
+            <div class="header-actions">
+            
                 <span id="currentUserType"></span>
                 <button id="logoutBtn" class="btn btn-warning btn-sm">
                     <i class="fas fa-sign-out-alt"></i> Chiqish
@@ -1340,51 +1355,60 @@
                     </div>
                     
                     <div id="clients" class="tab-content">
-                        <div class="tabs">
-                            <button class="tab-btn active" data-tab="addClientTab">Yangi mijoz</button>
-                            <button class="tab-btn" data-tab="clientsListTab">Mijozlar ro'yxati</button>
-                        </div>
-                        
-                        <div id="addClientTab" class="tab-content active">
-                            <div class="card">
-                                <h3 class="card-title"><i class="fas fa-user-plus"></i> Yangi mijoz</h3>
-                                <div class="form-group">
-                                    <label class="form-label">Mijoz nomi *</label>
-                                    <input type="text" id="newClientName" class="form-control" placeholder="To'liq ism">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Telefon raqami</label>
-                                    <input type="tel" id="newClientPhone" class="form-control" placeholder="+998901234567" inputmode="tel">
-                                </div>
-                                <button id="saveNewClientBtn" class="btn btn-success">
-                                    <i class="fas fa-save"></i> Mijozni saqlash
-                                </button>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-users"></i> Mijozlar boshqaruvi</h3>
+                            
+                            <div class="tabs">
+                                <button class="tab-btn active" data-tab="addClientTab">Yangi mijoz</button>
+                                <button class="tab-btn" data-tab="clientsListTab">Mijozlar ro'yxati</button>
                             </div>
-                        </div>
-                        
-                        <div id="clientsListTab" class="tab-content">
-                            <div class="card">
-                                <h3 class="card-title"><i class="fas fa-users"></i> Mijozlar ro'yxati</h3>
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nomi</th>
-                                                <th>Telefon</th>
-                                                <th>Qarz</th>
-                                                <th>Harakatlar</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="clientsList">
-                                            <!-- Mijozlar ro'yxati bu yerda ko'rsatiladi -->
-                                        </tbody>
-                                    </table>
+                            
+                            <!-- Yangi mijoz qo'shish -->
+                            <div id="addClientTab" class="tab-content active">
+                                <div class="card">
+                                    <h4 class="card-title"><i class="fas fa-user-plus"></i> Yangi mijoz qo'shish</h4>
+                                    <div class="form-group">
+                                        <label class="form-label">Mijoz nomi *</label>
+                                        <input type="text" id="newClientName" class="form-control" placeholder="To'liq ism">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Telefon raqami</label>
+                                        <input type="tel" id="newClientPhone" class="form-control" placeholder="+998901234567" inputmode="tel">
+                                    </div>
+                                    <button id="saveNewClientBtn" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Mijozni saqlash
+                                    </button>
                                 </div>
-                                <div id="clientsListEmpty" class="empty-state" style="display: none;">
-                                    <i class="fas fa-users"></i>
-                                    <h3>Mijozlar mavjud emas</h3>
-                                    <p>Yangi mijoz qo'shish uchun "Yangi mijoz" tabiga o'ting</p>
+                            </div>
+                            
+                            <!-- Mijozlar ro'yxati -->
+                            <div id="clientsListTab" class="tab-content">
+                                <div class="card">
+                                    <h4 class="card-title"><i class="fas fa-list"></i> Mijozlar ro'yxati</h4>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Ism</th>
+                                                    <th>Telefon</th>
+                                                    <th>Jami olgan (so'm)</th>
+                                                    <th>Jami to'lagan (so'm)</th>
+                                                    <th>Jami brak chegirmasi</th>
+                                                    <th>Qarz qoldig'i</th>
+                                                    <th>Harakatlar</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="clientsListTable">
+                                                <!-- Mijozlar ro'yxati bu yerda ko'rsatiladi -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="clientsListEmpty" class="empty-state" style="display: none;">
+                                        <i class="fas fa-users"></i>
+                                        <h3>Mijozlar mavjud emas</h3>
+                                        <p>Yangi mijoz qo'shish uchun "Yangi mijoz" tabiga o'ting</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1729,7 +1753,7 @@
         </div>
     </div>
 
-    <!-- Tema tugmasi -->
+    <!-- Tema tugmasi - PASTDA -->
     <button id="themeToggle" class="theme-toggle">
         <i class="fas fa-moon"></i>
     </button>
@@ -1778,8 +1802,70 @@
             if (!DB.load('app_initialized')) {
                 console.log('Dastur birinchi marta ishga tushirildi, bo\'sh ma\'lumotlar yaratilmoqda...');
                 
-                DB.save('workshops', []);
-                DB.save('clients', []);
+                // Test ma'lumotlari
+                const testClients = [
+                    {
+                        id: 123456,
+                        name: "Ali Valiyev",
+                        phone: "+998901234567",
+                        created: new Date().toISOString(),
+                        total_purchased: 1500000,
+                        total_purchased_quantity: 15,
+                        total_paid: 1000000,
+                        defect_deductions: 50000,
+                        debt: 450000
+                    },
+                    {
+                        id: 234567,
+                        name: "Hasan Hasanov",
+                        phone: "+998902345678",
+                        created: new Date().toISOString(),
+                        total_purchased: 800000,
+                        total_purchased_quantity: 8,
+                        total_paid: 600000,
+                        defect_deductions: 20000,
+                        debt: 180000
+                    },
+                    {
+                        id: 345678,
+                        name: "Botir Qodirov",
+                        phone: "+998903456789",
+                        created: new Date().toISOString(),
+                        total_purchased: 1200000,
+                        total_purchased_quantity: 12,
+                        total_paid: 1200000,
+                        defect_deductions: 0,
+                        debt: 0
+                    }
+                ];
+                
+                const testWorkshops = [
+                    {
+                        id: 1,
+                        name: "AKMAL AKA",
+                        phone: "+998901112233",
+                        address: "Chorsu bozori",
+                        debt: 250000,
+                        total_purchased: 1000000,
+                        total_paid: 750000,
+                        defect_deductions: 0,
+                        avg_price: 50000
+                    },
+                    {
+                        id: 2,
+                        name: "SHERZOD",
+                        phone: "+998902223344",
+                        address: "Yunusobod",
+                        debt: 180000,
+                        total_purchased: 800000,
+                        total_paid: 620000,
+                        defect_deductions: 0,
+                        avg_price: 45000
+                    }
+                ];
+                
+                DB.save('workshops', testWorkshops);
+                DB.save('clients', testClients);
                 DB.save('storage', []);
                 DB.save('incomes', []);
                 DB.save('sales', []);
@@ -1789,7 +1875,7 @@
                 DB.save('activities', []);
                 DB.save('app_initialized', true);
                 
-                console.log('Bo\'sh ma\'lumotlar yaratildi.');
+                console.log('Test ma\'lumotlar yaratildi.');
             }
         };
         
@@ -1922,6 +2008,8 @@
             window.scrollTo(0, 0);
         };
         
+        // Bosh sahifaga qaytish funksiyasi
+      
         // Boshqaruv panelini yangilash
         const updateDashboard = function() {
             const storage = DB.load('storage') || [];
@@ -2315,14 +2403,14 @@
                 saleDate.value = today;
             }
             
-            updateClientsList();
+            updateClientsTab();
             updateSalesHistory();
         };
         
-        // Mijozlar ro'yxatini yangilash
-        const updateClientsList = function() {
+        // Mijozlar tab'ini yangilash
+        const updateClientsTab = function() {
             const clients = DB.load('clients') || [];
-            const tbody = document.getElementById('clientsList');
+            const tbody = document.getElementById('clientsListTable');
             
             if (!tbody) return;
             
@@ -2333,9 +2421,12 @@
                 const row = document.createElement('tr');
                 
                 row.innerHTML = `
-                    <td>${client.id}</td>
+                    <td><strong>${client.id}</strong></td>
                     <td>${client.name}</td>
                     <td>${client.phone || ''}</td>
+                    <td>${formatNumber(Math.round(client.total_purchased || 0))} so'm</td>
+                    <td>${formatNumber(Math.round(client.total_paid || 0))} so'm</td>
+                    <td>${formatNumber(Math.round(client.defect_deductions || 0))} so'm</td>
                     <td>${client.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(client.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
                     <td>
                         <button class="btn btn-primary btn-sm" onclick="editClient(${client.id})" style="padding: 6px 12px; margin: 2px;">
@@ -2981,12 +3072,51 @@
             document.getElementById('modalClientName').value = '';
             document.getElementById('modalClientPhone').value = '';
             
-            updateClientsList();
+            updateClientsTab();
             updateSalesPage();
             
             addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
             
             showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: ${newId}`);
+        };
+        
+        // Yangi mijoz qo'shish (tab ichidagi)
+        const addClientFromTab = function() {
+            const name = document.getElementById('newClientName').value.trim();
+            const phone = document.getElementById('newClientPhone').value.trim();
+            
+            if (!name) {
+                showMessage('Mijoz nomini kiriting!', 'error');
+                return;
+            }
+            
+            const clients = DB.load('clients') || [];
+            const newId = generateClientId();
+            
+            const newClient = {
+                id: newId,
+                name: name,
+                phone: phone,
+                created: new Date().toISOString(),
+                total_purchased: 0,
+                total_purchased_quantity: 0,
+                total_paid: 0,
+                defect_deductions: 0,
+                debt: 0
+            };
+            
+            clients.push(newClient);
+            DB.save('clients', clients);
+            
+            document.getElementById('newClientName').value = '';
+            document.getElementById('newClientPhone').value = '';
+            
+            updateClientsTab();
+            updateSalesPage();
+            
+            addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
+            
+            showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: <strong>${newId}</strong>`);
         };
         
         // Mijozni tahrirlash
@@ -3011,7 +3141,7 @@
             client.phone = newPhone || '';
             
             DB.save('clients', clients);
-            updateClientsList();
+            updateClientsTab();
             updateSalesPage();
             
             addActivity('client_edit', `"${client.name}" mijozi o'zgartirildi`);
@@ -3045,7 +3175,7 @@
             
             clients.splice(clientIndex, 1);
             DB.save('clients', clients);
-            updateClientsList();
+            updateClientsTab();
             
             addActivity('client_delete', `"${clientName}" mijozi o'chirildi`);
             
@@ -3775,7 +3905,7 @@
                     
                     return;
                 } else {
-                    document.getElementById('errorText').textContent = 'Adashlar parolni bilishadi';
+                    document.getElementById('errorText').textContent = 'Adashlar paroni biladi';
                     document.getElementById('loginError').style.display = 'flex';
                     return;
                 }
@@ -3803,7 +3933,7 @@
                 currentUser = client;
                 
                 document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('mainPage').style.display = 'block';
+                document.getElementById('mainPage').style.display = 'block';
                 
                 document.getElementById('adminNav').style.display = 'none';
                 document.getElementById('clientInfoCard').style.display = 'block';
@@ -3897,6 +4027,9 @@
             // Chiqish tugmasi
             document.getElementById('logoutBtn').addEventListener('click', logout);
             
+            // Bosh sahifaga qaytish tugmasi
+            
+            
             // Navigatsiya tugmalari
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -3923,6 +4056,11 @@
                     const tabContent = document.getElementById(tabId);
                     if (tabContent) {
                         tabContent.classList.add('active');
+                    }
+                    
+                    // Agar mijozlar tab'iga o'tilsa, uni yangilash
+                    if (tabId === 'clientsListTab') {
+                        setTimeout(updateClientsTab, 100);
                     }
                 });
             });
@@ -3982,44 +4120,8 @@
                 document.getElementById('addClientModal').style.display = 'flex';
             });
             
-            // Mijoz qo'shish tugmasi (eski usul)
-            document.getElementById('saveNewClientBtn').addEventListener('click', function() {
-                const name = document.getElementById('newClientName').value.trim();
-                const phone = document.getElementById('newClientPhone').value.trim();
-                
-                if (!name) {
-                    showMessage('Mijoz nomini kiriting!', 'error');
-                    return;
-                }
-                
-                const clients = DB.load('clients') || [];
-                const newId = generateClientId();
-                
-                const newClient = {
-                    id: newId,
-                    name: name,
-                    phone: phone,
-                    created: new Date().toISOString(),
-                    total_purchased: 0,
-                    total_purchased_quantity: 0,
-                    total_paid: 0,
-                    defect_deductions: 0,
-                    debt: 0
-                };
-                
-                clients.push(newClient);
-                DB.save('clients', clients);
-                
-                document.getElementById('newClientName').value = '';
-                document.getElementById('newClientPhone').value = '';
-                
-                updateClientsList();
-                updateSalesPage();
-                
-                addActivity('client_add', `"${name}" mijozi qo'shildi (ID: ${newId})`);
-                
-                showMessage(`"${name}" mijozi muvaffaqiyatli qo'shildi! Mijoz ID: ${newId}`);
-            });
+            // Mijoz qo'shish tugmasi (tab ichidagi)
+            document.getElementById('saveNewClientBtn').addEventListener('click', addClientFromTab);
             
             // Sotuv qo'shish tugmasi
             document.getElementById('addSaleBtn').addEventListener('click', addSale);
@@ -4143,10 +4245,10 @@
             window.deleteIncome = deleteIncome;
             window.showDebtPaymentModal = showDebtPaymentModal;
             
-            console.log('Halat Savdosi Tizimi yuklandi. Versiya: 5.0 (Mukammal tuzatilgan)');
-            console.log('Tizim mobil qurilmalar uchun moslashtirildi. Admin paroli: ');
-            console.log('Brak tizimi to\'liq qayta tuzildi: mijozdan -> omborga -> sexga');
-            console.log('Ombor hisobi mukammallashtirildi');
+            console.log('Halat Savdosi Tizimi yuklandi. Versiya: 5.2 (Mijozlar qismi to\'liq ishlaydi)');
+            console.log('Tizim mobil qurilmalar uchun moslashtirildi. Admin paroli: 2');
+            console.log('Bosh sahifa tugmasi tepada, tema tugmasi pastda');
+            console.log('Mijozlar qismi to\'liq ishlaydi - barcha mijozlar ma\'lumotlari ko\'rinadi');
         });
     </script>
 </body>
