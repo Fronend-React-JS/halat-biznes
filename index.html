@@ -967,6 +967,10 @@
             <button class="nav-btn" data-page="debts">
                 <i class="fas fa-file-invoice-dollar"></i> Qarzlar
             </button>
+            <!-- SHUNDAN KEYIN SHU KODNI QO'Y: -->
+            <button class="nav-btn" data-page="expenses">
+                <i class="fas fa-money-bill-wave"></i> Rasxotlar
+            </button>
         </div>
         
         <!-- Asosiy kontent -->
@@ -1804,6 +1808,66 @@
             </div>
         </div>
     </div>
+
+    <!-- Rasxotlar bo'limini qo'shamiz -->
+<div id="expensesPage" class="page-content" style="display: none;">
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-money-bill-wave"></i> Rasxotlar (Xarajatlar) Hisobi</h2>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="addExpenseTab">Yangi rasxot</button>
+            <button class="tab-btn" data-tab="expensesHistoryTab">Rasxot tarixi</button>
+        </div>
+        
+        <div id="addExpenseTab" class="tab-content active">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-plus-circle"></i> Yangi rasxot qo'shish</h3>
+                <div class="form-group">
+                    <label class="form-label">Sana *</label>
+                    <input type="date" id="expenseDate" class="form-control" value="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Summa (so'm) *</label>
+                    <input type="number" id="expenseAmount" class="form-control" placeholder="0" min="1" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Izoh *</label>
+                    <textarea id="expenseNote" class="form-control" placeholder="Rasxot haqida batafsil ma'lumot..." required></textarea>
+                    <small style="color: #666;">Masalan: "Mashina benzini - Toshkentga halat olib borish", "Ovqatlanish", "Komissiya"</small>
+                </div>
+                <button id="addExpenseBtn" class="btn btn-danger">
+                    <i class="fas fa-save"></i> Rasxotni saqlash
+                </button>
+            </div>
+        </div>
+        
+        <div id="expensesHistoryTab" class="tab-content">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-history"></i> Rasxotlar tarixi (barchasi)</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Sana</th>
+                                <th>Summa</th>
+                                <th>Izoh</th>
+                                <th>O'chirish</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesHistoryBody">
+                            <!-- Rasxotlar bu yerda ko'rsatiladi -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="expensesHistoryEmpty" class="empty-state" style="display: none;">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>Rasxotlar mavjud emas</h3>
+                    <p>Hozircha hech qanday rasxot kiritilmagan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     
     <!-- Modal oynalar -->
     <div id="messageModal" class="modal">
@@ -1905,6 +1969,7 @@
             workshopReturns: [],
             payments: [],
             activities: [],
+            expenses: [], // ✅ YANGI QO'SHILDI
             app_initialized: false
         };
         
@@ -1926,6 +1991,7 @@
                     appData.workshopReturns = [];
                     appData.payments = [];
                     appData.activities = [];
+                    appData.expenses = [];
                     appData.app_initialized = true;
                     
                     // Barcha ma'lumotlarni Firebase'ga saqlash
@@ -1939,6 +2005,7 @@
                         DB.save('workshopReturns', appData.workshopReturns),
                         DB.save('payments', appData.payments),
                         DB.save('activities', appData.activities),
+                        DB.save('expenses', appData.expenses),
                         DB.save('app_initialized', appData.app_initialized)
                     ]);
                     
@@ -1955,6 +2022,7 @@
                     appData.workshopReturns = await DB.load('workshopReturns') || [];
                     appData.payments = await DB.load('payments') || [];
                     appData.activities = await DB.load('activities') || [];
+                    appData.expenses = await DB.load('expenses') || [];
                     
                     console.log('Firebase\'dan ma\'lumotlar muvaffaqiyatli yuklandi');
                 }
@@ -2001,6 +2069,15 @@
                         appData.activities = Object.values(data);
                         if (currentPage === 'dashboard') {
                             updateRecentActivities();
+                        }
+                    }
+                });
+
+                DB.onDataChange('expenses', (data) => {
+                    if (data) {
+                        appData.expenses = Object.values(data);
+                        if (currentPage === 'expenses' || currentPage === 'dashboard') {
+                            updatePage(currentPage);
                         }
                     }
                 });
@@ -2142,6 +2219,9 @@
                 case 'client':
                     updateClientPage();
                     break;
+                case 'expenses': // ✅ YANGI QO'SHILDI
+                    updateExpensesPage();
+                    break;
             }
             
             // Ko'ruvchi admin tekshiruvi
@@ -2207,8 +2287,15 @@
                 returnProfitLoss += avgCost * ret.quantity;
             });
             
-            // Haqiqiy foyda = sotuv foydasi - brak tufayli yo'qotilgan foyda - sexga qaytarish xarajatlari
-            const realProfit = totalProfit - defectProfitLoss - returnProfitLoss;
+            // ✅ RASXOTLARNI HISOBLASH QO'SHILDI
+let totalExpenses = 0;
+const expenses = appData.expenses;
+expenses.forEach(expense => {
+    totalExpenses += expense.amount || 0;
+});
+
+// Haqiqiy foyda = sotuv foydasi - brak tufayli yo'qotilgan foyda - sexga qaytarish xarajatlari - rasxotlar
+const realProfit = totalProfit - defectProfitLoss - returnProfitLoss - totalExpenses;
             
             document.getElementById('totalProfit').textContent = formatNumber(Math.round(realProfit)) + ' so\'m';
             
@@ -2278,7 +2365,14 @@
                 todayReturnProfitLoss += avgCost * ret.quantity;
             });
             
-            const todayRealProfit = todayProfit - todayDefectProfitLoss - todayReturnProfitLoss;
+            // Bugungi rasxotlarni hisoblash
+let todayExpenses = 0;
+expenses.filter(expense => expense.date === today).forEach(expense => {
+    todayExpenses += expense.amount || 0;
+});
+
+// Bugungi foyda hisobida rasxotlarni ham hisoblaymiz
+const todayRealProfit = todayProfit - todayDefectProfitLoss - todayReturnProfitLoss - todayExpenses;
             
             document.getElementById('todayProfit').textContent = formatNumber(Math.round(todayRealProfit)) + ' so\'m';
             
@@ -2289,6 +2383,30 @@
             document.getElementById('todayDefects').textContent = formatNumber(todayDefects) + ' dona';
             
             updateRecentActivities();
+
+
+                // ✅ RASXOTLAR STATISTIKASI QO'SHILDI
+    const statsGrid = document.querySelector('#dashboardPage .stats-grid');
+    if (statsGrid) {
+        // Agar rasxotlar statistikasi yo'q bo'lsa, qo'shamiz
+        if (!document.getElementById('totalExpensesStat')) {
+            const expenseStat = document.createElement('div');
+            expenseStat.className = 'stat-card';
+            expenseStat.id = 'totalExpensesStat';
+            expenseStat.innerHTML = `
+                <div class="stat-icon" style="background-color: var(--danger);">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalExpenses">${formatNumber(Math.round(totalExpenses))} so'm</h3>
+                    <p>Jami rasxotlar</p>
+                </div>
+            `;
+            statsGrid.appendChild(expenseStat);
+        } else {
+            document.getElementById('totalExpenses').textContent = formatNumber(Math.round(totalExpenses)) + ' so`m';
+        }
+    }
         };
         
         // So'nggi aktivliklarni yangilash
@@ -2750,6 +2868,144 @@
             }
         };
         
+        // Rasxotlar sahifasini yangilash
+const updateExpensesPage = function() {
+    const today = new Date().toISOString().split('T')[0];
+    const expenseDate = document.getElementById('expenseDate');
+    if (expenseDate && !expenseDate.value) {
+        expenseDate.value = today;
+    }
+    
+    const expenses = appData.expenses;
+    const tbody = document.getElementById('expensesHistoryBody');
+    
+    if (tbody) {
+        tbody.innerHTML = '';
+        checkEmptyState('expensesHistoryEmpty', expenses);
+        
+        // Barcha rasxotlarni ko'rsatish (eng yangisi birinchi)
+        const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        sortedExpenses.forEach(expense => {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${formatDate(expense.date)}</td>
+                <td><strong style="color: var(--danger);">${formatNumber(Math.round(expense.amount))} so'm</strong></td>
+                <td>${expense.note}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm delete-expense-btn" onclick="deleteExpense(${expense.id})" style="padding: 6px 12px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+};
+
+// Yangi rasxot qo'shish
+const addExpense = async function() {
+    if (currentUserType === 'viewer') {
+        showMessage('Sizda rasxot qo\'shish huquqi yo\'q!', 'error');
+        return;
+    }
+    
+    try {
+        const date = document.getElementById('expenseDate').value;
+        const amount = parseInt(document.getElementById('expenseAmount').value);
+        const note = document.getElementById('expenseNote').value.trim();
+        
+        if (!date) {
+            showMessage('Sana tanlang!', 'error');
+            return;
+        }
+        
+        if (!amount || amount <= 0) {
+            showMessage('To\'g\'ri summa kiriting!', 'error');
+            return;
+        }
+        
+        if (!note) {
+            showMessage('Izoh kiritishingiz majburiy!', 'error');
+            return;
+        }
+        
+        let expenses = [...appData.expenses];
+        
+        let newId = 1;
+        if (expenses.length > 0) {
+            newId = Math.max(...expenses.map(e => e.id)) + 1;
+        }
+        
+        const newExpense = {
+            id: newId,
+            date: date,
+            timestamp: new Date().toISOString(),
+            amount: amount,
+            note: note,
+            added_by: currentUserType === 'admin' ? 'Dostonbek' : 'Ko\'ruvchi'
+        };
+        
+        expenses.push(newExpense);
+        await DB.save('expenses', expenses);
+        appData.expenses = expenses;
+        
+        // Formani tozalash
+        document.getElementById('expenseAmount').value = '';
+        document.getElementById('expenseNote').value = '';
+        
+        updateExpensesPage();
+        updateDashboard();
+        
+        await addActivity('expense', `${formatNumber(amount)} so'm rasxot qo'shildi: ${note.substring(0, 50)}...`);
+        
+        showMessage(`${formatNumber(amount)} so'm rasxot muvaffaqiyatli saqlandi!`);
+    } catch (error) {
+        console.error('Rasxot qo\'shishda xatolik:', error);
+        showMessage('Xatolik yuz berdi!', 'error');
+    }
+};
+
+// Rasxotni o'chirish
+const deleteExpense = async function(id) {
+    if (currentUserType === 'viewer') {
+        showMessage('Sizda o\'chirish huquqi yo\'q!', 'error');
+        return;
+    }
+    
+    try {
+        let expenses = [...appData.expenses];
+        const expenseIndex = expenses.findIndex(e => e.id == id);
+        
+        if (expenseIndex === -1) {
+            showMessage('Rasxot topilmadi!', 'error');
+            return;
+        }
+        
+        const expense = expenses[expenseIndex];
+        
+        if (!confirm(`${formatNumber(expense.amount)} so'm rasxotni o'chirishni istaysizmi?\nIzoh: ${expense.note}`)) {
+            return;
+        }
+        
+        expenses.splice(expenseIndex, 1);
+        await DB.save('expenses', expenses);
+        appData.expenses = expenses;
+        
+        updateExpensesPage();
+        updateDashboard();
+        
+        await addActivity('expense_delete', `${formatNumber(expense.amount)} so'm rasxot o'chirildi: ${expense.note.substring(0, 50)}...`);
+        
+        showMessage('Rasxot muvaffaqiyatli o\'chirildi!');
+    } catch (error) {
+        console.error('Rasxotni o\'chirishda xatolik:', error);
+        showMessage('Xatolik yuz berdi!', 'error');
+    }
+};
+
         // Qarzlar sahifasini yangilash
         const updateDebtsPage = function() {
             const workshops = appData.workshops;
@@ -2959,12 +3215,12 @@
             if (currentUserType !== 'viewer') return;
             
             // Tahrirlash tugmalarini yashirish
-            document.querySelectorAll('.edit-workshop-btn, .delete-workshop-btn, .edit-client-btn, .delete-client-btn, .delete-sale-btn, .delete-income-btn, .delete-return-btn, .pay-debt-btn').forEach(button => {
+            document.querySelectorAll('.edit-workshop-btn, .delete-workshop-btn, .edit-client-btn, .delete-client-btn, .delete-sale-btn, .delete-income-btn, .delete-return-btn, .pay-debt-btn, .delete-expense-btn').forEach(button => {
                 button.style.display = 'none';
             });
             
             // Qo'shish tugmalarini yashirish
-            document.querySelectorAll('#addWorkshopBtn, #addIncomeBtn, #saveNewClientBtn, #newClientBtn, #addSaleBtn, #processDefectBtn, #processReturnToWorkshopBtn, #processPaymentBtn, #confirmDebtPayment').forEach(button => {
+            document.querySelectorAll('#addWorkshopBtn, #addIncomeBtn, #saveNewClientBtn, #newClientBtn, #addSaleBtn, #processDefectBtn, #processReturnToWorkshopBtn, #processPaymentBtn, #confirmDebtPayment, #addExpenseBtn').forEach(button => {
                 if (button) button.style.display = 'none';
             });
             
@@ -4403,7 +4659,7 @@
                     
                     return;
                 } else {
-                    document.getElementById('errorText').textContent = 'Noto\'g\'ri parol! Adminlar parolini biladi';
+                    document.getElementById('errorText').textContent = 'Dostobek parolini biladi';
                     document.getElementById('loginError').style.display = 'flex';
                     return;
                 }
@@ -4670,6 +4926,9 @@
                 
                 // To'lov qilish tugmasi
                 document.getElementById('processPaymentBtn').addEventListener('click', processPayment);
+
+                // Rasxot qo'shish tugmasi
+                document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
                 
                 // To'lov turini o'zgartirganda
                 const paymentTypeSelect = document.getElementById('paymentType');
@@ -4780,10 +5039,11 @@
                 window.deleteReturn = deleteReturn;
                 window.deleteIncome = deleteIncome;
                 window.showDebtPaymentModal = showDebtPaymentModal;
+                window.deleteExpense = deleteExpense; // ✅ YANGI QO'SHILDI
                 
-                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.2 (2 xil admin)');
+                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.3 (Rasxotlar qo\'shildi)');
                 console.log('Admin parollar:');
-                console.log('1. Asosiy admin (barcha huquqlar): 2');
+                console.log('1. Asosiy admin (barcha huquqlar): aytmiman parolini');
                 console.log('2. Ko\'ruvchi admin (faqat ko\'rish): 1111');
                 console.log('Ko\'ruvchi admin faqat ma\'lumotlarni ko\'ra oladi, hech narsani o\'zgartira olmaydi!');
                 
