@@ -101,7 +101,7 @@
                         try {
                             await set(ref(database, dataKey), data);
                             localStorage.setItem(key, 'true');
-                            console.log(`${dataKey} ma'lumotlari Firebase'ga sinxronlandi`);
+                            console.log(`${dataKey} ma\'lumotlari Firebase\'ga sinxronlandi`);
                         } catch (error) {
                             console.error(`${dataKey} sinxronlash xatosi:`, error);
                         }
@@ -573,6 +573,11 @@
             color: var(--secondary);
         }
         
+        .badge-secondary {
+            background-color: #eaeaea;
+            color: #666;
+        }
+        
         /* Tema tugmasi - PASTDA */
         .theme-toggle {
             position: fixed;
@@ -967,92 +972,95 @@
         <!-- Asosiy kontent -->
         <div id="pageContent">
             <!-- Mijoz sahifasi kontenti -->
-            <div id="clientPage" class="page-content" style="display: none;">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-user"></i> Mening hisobim</h2>
-                    
-                    <div class="client-summary">
-                        <div style="margin-bottom: 20px;">
-                            <h3 style="color: var(--primary); margin-bottom: 8px;">Mening ma'lumotlarim</h3>
-                            <p><strong>Mijoz ID:</strong> <span id="clientIdDisplay2"></span></p>
-                            <p><strong>Ism:</strong> <span id="clientNameDisplay2"></span></p>
-                            <p><strong>Telefon:</strong> <span id="clientPhoneDisplay">-</span></p>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background-color: var(--secondary);">
-                                    <i class="fas fa-tshirt"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3 id="clientTotalProducts2">0 dona</h3>
-                                    <p>Jami olingan halatlar</p>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background-color: var(--success);">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3 id="clientTotalPaid2">0 so'm</h3>
-                                    <p>Jami to'langan</p>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background-color: var(--danger);">
-                                    <i class="fas fa-file-invoice-dollar"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3 id="clientTotalDebt2">0 so'm</h3>
-                                    <p>Jami qarzingiz</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Mijozning mahsulotlari -->
-                        <div class="client-products-list">
-                            <h3 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-list"></i> Olingan mahsulotlar
-                            </h3>
-                            <div id="clientProductsList">
-                                <!-- Mahsulotlar bu yerda ko'rsatiladi -->
-                            </div>
-                            <div id="clientProductsEmpty" class="empty-state" style="display: none;">
-                                <i class="fas fa-tshirt"></i>
-                                <h3>Hozircha mahsulotlar yo'q</h3>
-                                <p>Siz hali mahsulot olmagansiz</p>
-                            </div>
-                        </div>
-                        
-                        <!-- To'lovlar tarixi -->
-                        <div class="payments-list mt-3">
-                            <h3 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-history"></i> To'lovlar tarixi
-                            </h3>
-                            <div id="clientPaymentsList">
-                                <!-- To'lovlar bu yerda ko'rsatiladi -->
-                            </div>
-                            <div id="clientPaymentsEmpty" class="empty-state" style="display: none;">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <h3>To'lovlar yo'q</h3>
-                                <p>Hozircha to'lov amalga oshirilmagan</p>
-                            </div>
-                        </div>
-                        
-                        <div style="background-color: var(--light); padding: 15px; border-radius: 10px; margin-top: 20px;">
-                            <h4 style="margin-bottom: 12px; color: var(--primary); font-size: 1.1rem;">
-                                <i class="fas fa-info-circle"></i> Qarz to'lovlari haqida
-                            </h4>
-                            <p style="color: #666; line-height: 1.5; font-size: 13px;">
-                                Qarz to'lovlarini faqat tizim administratori amalga oshira oladi. 
-                                To'lov qilish uchun administrator bilan bog'laning.
-                            </p>
-                        </div>
+<div id="clientPage" class="page-content" style="display: none;">
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-user"></i> Mening hisobim</h2>
+        
+        <div class="client-summary">
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: var(--primary); margin-bottom: 8px;">Mening ma'lumotlarim</h3>
+                <p><strong>Mijoz ID:</strong> <span id="clientIdDisplay2"></span></p>
+                <p><strong>Ism:</strong> <span id="clientNameDisplay2"></span></p>
+                <p><strong>Telefon:</strong> <span id="clientPhoneDisplay">-</span></p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--secondary);">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientTotalProducts2">0 dona</h3>
+                        <p>Jami olingan halatlar</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--success);">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientTotalPaid2">0 so'm</h3>
+                        <p>Jami to'langan</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--danger);">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientTotalDebt2">0 so'm</h3>
+                        <p>Jami qarzingiz</p>
                     </div>
                 </div>
             </div>
+            
+            <!-- Mijozning mahsulotlari -->
+            <div class="client-products-list">
+                <h3 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-list"></i> Olingan mahsulotlar
+                </h3>
+                <div id="clientProductsList">
+                    <!-- Mahsulotlar bu yerda ko'rsatiladi -->
+                </div>
+                <div id="clientProductsEmpty" class="empty-state" style="display: none;">
+                    <i class="fas fa-tshirt"></i>
+                    <h3>Hozircha mahsulotlar yo'q</h3>
+                    <p>Siz hali mahsulot olmagansiz</p>
+                </div>
+            </div>
+            
+            <!-- To'lovlar tarixi -->
+            <div class="payments-list mt-3">
+                <h3 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-history"></i> To'lovlar tarixi
+                </h3>
+                <div id="clientPaymentsList">
+                    <!-- To'lovlar bu yerda ko'rsatiladi -->
+                </div>
+                <div id="clientPaymentsEmpty" class="empty-state" style="display: none;">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>To'lovlar yo'q</h3>
+                    <p>Hozircha to'lov amalga oshirilmagan</p>
+                </div>
+            </div>
+            
+            <div style="background-color: var(--light); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin-bottom: 12px; color: var(--primary); font-size: 1.1rem;">
+                    <i class="fas fa-info-circle"></i> Qarz to'lovlari haqida
+                </h4>
+                <p style="color: #666; line-height: 1.5; font-size: 13px;">
+                    Qarz to'lovlarini faqat tizim administratori amalga oshira oladi. 
+                    To'lov qilish uchun administrator bilan bog'laning.
+                </p>
+                <p style="color: #666; line-height: 1.5; font-size: 13px; margin-top: 10px;">
+                    <i class="fas fa-phone"></i> Aloqa uchun: +99890 953 53 03
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
             
             <!-- Boshqaruv paneli (admin) -->
             <div id="dashboardPage" class="page-content">
@@ -1724,10 +1732,7 @@
                     </div>
                     
                     <div id="debtPayments" class="tab-content">
-                        <div class="tabs">
-                            <button class="tab-btn active" data-tab="addPaymentTab">To'lov qilish</button>
-                            <button class="tab-btn" data-tab="paymentsHistoryTab">To'lovlar tarixi</button>
-                        </div>
+                       
                         
                         <div id="addPaymentTab" class="tab-content active">
                             <div class="card">
@@ -1785,14 +1790,13 @@
                                         </thead>
                                         <tbody id="paymentsHistory">
                                             <!-- To'lovlar tarixi bu yerda ko'rsatiladi -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="paymentsHistoryEmpty" class="empty-state" style="display: none;">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                    <h3>To'lovlar mavjud emas</h3>
-                                    <p>Hozircha qarz to'lovlari amalga oshirilmagan</p>
-                                </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="paymentsHistoryEmpty" class="empty-state" style="display: none;">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <h3>To'lovlar mavjud emas</h3>
+                                <p>Hozircha qarz to'lovlari amalga oshirilmagan</p>
                             </div>
                         </div>
                     </div>
@@ -1913,67 +1917,8 @@
                     console.log('Dastur birinchi marta ishga tushirildi, Firebase\'ga test ma\'lumotlari yaratilmoqda...');
                     
                     // Test ma'lumotlari
-                    appData.workshops = [
-                        {
-                            id: 1,
-                            name: "AKMAL AKA",
-                            phone: "+998901112233",
-                            address: "Chorsu bozori",
-                            debt: 250000,
-                            total_purchased: 1000000,
-                            total_paid: 750000,
-                            defect_deductions: 0,
-                            avg_price: 50000
-                        },
-                        {
-                            id: 2,
-                            name: "SHERZOD",
-                            phone: "+998902223344",
-                            address: "Yunusobod",
-                            debt: 180000,
-                            total_purchased: 800000,
-                            total_paid: 620000,
-                            defect_deductions: 0,
-                            avg_price: 45000
-                        }
-                    ];
-                    
-                    appData.clients = [
-                        {
-                            id: 123456,
-                            name: "Ali Valiyev",
-                            phone: "+998901234567",
-                            created: new Date().toISOString(),
-                            total_purchased: 1500000,
-                            total_purchased_quantity: 15,
-                            total_paid: 1000000,
-                            defect_deductions: 50000,
-                            debt: 450000
-                        },
-                        {
-                            id: 234567,
-                            name: "Hasan Hasanov",
-                            phone: "+998902345678",
-                            created: new Date().toISOString(),
-                            total_purchased: 800000,
-                            total_purchased_quantity: 8,
-                            total_paid: 600000,
-                            defect_deductions: 20000,
-                            debt: 180000
-                        },
-                        {
-                            id: 345678,
-                            name: "Botir Qodirov",
-                            phone: "+998903456789",
-                            created: new Date().toISOString(),
-                            total_purchased: 1200000,
-                            total_purchased_quantity: 12,
-                            total_paid: 1200000,
-                            defect_deductions: 0,
-                            debt: 0
-                        }
-                    ];
-                    
+                    appData.workshops = [];
+                    appData.clients = [];
                     appData.storage = [];
                     appData.incomes = [];
                     appData.sales = [];
@@ -2121,7 +2066,9 @@
                     type: type,
                     details: details,
                     timestamp: new Date().toISOString(),
-                    user: currentUserType === 'admin' ? 'Admin' : (currentUser ? currentUser.name : 'Noma\'lum')
+                    user: currentUserType === 'admin' ? 'Dostonbek' : 
+                          currentUserType === 'viewer' ? 'Ko\'ruvchi' : 
+                          (currentUser ? currentUser.name : 'Noma\'lum')
                 });
                 
                 if (activities.length > 50) {
@@ -2195,6 +2142,11 @@
                 case 'client':
                     updateClientPage();
                     break;
+            }
+            
+            // Ko'ruvchi admin tekshiruvi
+            if (currentUserType === 'viewer') {
+                setTimeout(hideEditButtons, 100);
             }
             
             window.scrollTo(0, 0);
@@ -2413,10 +2365,10 @@
                     <td>${workshop.phone || ''}</td>
                     <td>${formatNumber(Math.round(workshop.debt || 0))} so'm</td>
                     <td>
-                        <button class="btn btn-primary btn-sm" onclick="editWorkshop(${workshop.id})" style="padding: 6px 12px; margin: 2px;">
+                        <button class="btn btn-primary btn-sm edit-workshop-btn" onclick="editWorkshop(${workshop.id})" style="padding: 6px 12px; margin: 2px;">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteWorkshop(${workshop.id})" style="padding: 6px 12px; margin: 2px;">
+                        <button class="btn btn-danger btn-sm delete-workshop-btn" onclick="deleteWorkshop(${workshop.id})" style="padding: 6px 12px; margin: 2px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -2609,7 +2561,7 @@
                         <td>${formatNumber(Math.round(paid))} so'm</td>
                         <td>${debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(debt)) + ' so\'m</span>' : '<span class="badge badge-success">To\'langan</span>'}</td>
                         <td>
-                            <button class="btn btn-danger btn-sm" onclick="deleteIncome(${income.id})" style="padding: 6px 12px;">
+                            <button class="btn btn-danger btn-sm delete-income-btn" onclick="deleteIncome(${income.id})" style="padding: 6px 12px;">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -2678,10 +2630,10 @@
                     <td>${formatNumber(Math.round(client.defect_deductions || 0))} so'm</td>
                     <td>${client.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(client.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
                     <td>
-                        <button class="btn btn-primary btn-sm" onclick="editClient(${client.id})" style="padding: 6px 12px; margin: 2px;">
+                        <button class="btn btn-primary btn-sm edit-client-btn" onclick="editClient(${client.id})" style="padding: 6px 12px; margin: 2px;">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteClient(${client.id})" style="padding: 6px 12px; margin: 2px;">
+                        <button class="btn btn-danger btn-sm delete-client-btn" onclick="deleteClient(${client.id})" style="padding: 6px 12px; margin: 2px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -2735,7 +2687,7 @@
                     <td>${formatNumber(Math.round(paid))} so'm</td>
                     <td>${debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(debt)) + ' so\'m</span>' : '<span class="badge badge-success">To\'langan</span>'}</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" onclick="deleteSale(${sale.id})" style="padding: 6px 12px;">
+                        <button class="btn btn-danger btn-sm delete-sale-btn" onclick="deleteSale(${sale.id})" style="padding: 6px 12px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -2781,7 +2733,7 @@
                         <td>${ret.quantity} dona</td>
                         <td>${ret.reason || ret.note || ''}</td>
                         <td>
-                            <button class="btn btn-danger btn-sm" onclick="deleteReturn(${ret.id}, '${ret.type}')" style="padding: 6px 12px;">
+                            <button class="btn btn-danger btn-sm delete-return-btn" onclick="deleteReturn(${ret.id}, '${ret.type}')" style="padding: 6px 12px;">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -2817,7 +2769,7 @@
                         <td>${formatNumber(Math.round(workshop.defect_deductions || 0))} so'm</td>
                         <td>${workshop.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(workshop.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="showDebtPaymentModal('workshop', ${workshop.id}, '${workshop.name}', ${workshop.debt || 0})" ${workshop.debt <= 0 ? 'disabled' : ''} style="padding: 6px 12px;">
+                            <button class="btn btn-success btn-sm pay-debt-btn" onclick="showDebtPaymentModal('workshop', ${workshop.id}, '${workshop.name}', ${workshop.debt || 0})" ${workshop.debt <= 0 ? 'disabled' : ''} style="padding: 6px 12px;">
                                 <i class="fas fa-money-bill-wave"></i>
                             </button>
                         </td>
@@ -2844,7 +2796,7 @@
                         <td>${formatNumber(Math.round(client.defect_deductions || 0))} so'm</td>
                         <td>${client.debt > 0 ? '<span class="badge badge-danger">' + formatNumber(Math.round(client.debt)) + ' so\'m</span>' : '<span class="badge badge-success">Qarz yo\'q</span>'}</td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="showDebtPaymentModal('client', ${client.id}, '${client.name}', ${client.debt || 0})" ${client.debt <= 0 ? 'disabled' : ''} style="padding: 6px 12px;">
+                            <button class="btn btn-success btn-sm pay-debt-btn" onclick="showDebtPaymentModal('client', ${client.id}, '${client.name}', ${client.debt || 0})" ${client.debt <= 0 ? 'disabled' : ''} style="padding: 6px 12px;">
                                 <i class="fas fa-money-bill-wave"></i>
                             </button>
                         </td>
@@ -2928,12 +2880,12 @@
             document.getElementById('clientPhoneDisplay').textContent = currentUser.phone || '-';
             
             document.getElementById('clientTotalProducts').textContent = formatNumber(currentUser.total_purchased_quantity || 0) + ' dona';
-            document.getElementById('clientTotalDebt').textContent = formatNumber(Math.round(currentUser.debt || 0)) + ' so\'m';
-            document.getElementById('clientTotalPaid').textContent = formatNumber(Math.round(currentUser.total_paid || 0)) + ' so\'m';
+            document.getElementById('clientTotalDebt').textContent = formatNumber(Math.round(currentUser.debt || 0)) + ' so`m';
+            document.getElementById('clientTotalPaid').textContent = formatNumber(Math.round(currentUser.total_paid || 0)) + ' so`m';
             
             document.getElementById('clientTotalProducts2').textContent = formatNumber(currentUser.total_purchased_quantity || 0) + ' dona';
-            document.getElementById('clientTotalDebt2').textContent = formatNumber(Math.round(currentUser.debt || 0)) + ' so\'m';
-            document.getElementById('clientTotalPaid2').textContent = formatNumber(Math.round(currentUser.total_paid || 0)) + ' so\'m';
+            document.getElementById('clientTotalDebt2').textContent = formatNumber(Math.round(currentUser.debt || 0)) + ' so`m';
+            document.getElementById('clientTotalPaid2').textContent = formatNumber(Math.round(currentUser.total_paid || 0)) + ' so`m';
             
             // Mijozning mahsulotlarini ko'rsatish
             const sales = appData.sales;
@@ -3002,8 +2954,42 @@
             }
         };
         
+        // Ko'ruvchi admin uchun o'zgartirish tugmalarini yashirish funksiyasi
+        const hideEditButtons = function() {
+            if (currentUserType !== 'viewer') return;
+            
+            // Tahrirlash tugmalarini yashirish
+            document.querySelectorAll('.edit-workshop-btn, .delete-workshop-btn, .edit-client-btn, .delete-client-btn, .delete-sale-btn, .delete-income-btn, .delete-return-btn, .pay-debt-btn').forEach(button => {
+                button.style.display = 'none';
+            });
+            
+            // Qo'shish tugmalarini yashirish
+            document.querySelectorAll('#addWorkshopBtn, #addIncomeBtn, #saveNewClientBtn, #newClientBtn, #addSaleBtn, #processDefectBtn, #processReturnToWorkshopBtn, #processPaymentBtn, #confirmDebtPayment').forEach(button => {
+                if (button) button.style.display = 'none';
+            });
+            
+            // Input, select va textarea elementlarini faolsizlantirish
+            document.querySelectorAll('input:not([type="date"]):not([id*="search"]), select, textarea').forEach(input => {
+                input.disabled = true;
+                input.style.backgroundColor = '#f5f5f5';
+                input.style.cursor = 'not-allowed';
+            });
+            
+            // Sana inputlarini faolsizlantirish
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.disabled = true;
+                input.style.backgroundColor = '#f5f5f5';
+                input.style.cursor = 'not-allowed';
+            });
+        };
+        
         // Sex qo'shish
         const addWorkshop = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda sex qo\'shish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const name = document.getElementById('workshopName').value.trim();
                 const phone = document.getElementById('workshopPhone').value.trim();
@@ -3056,6 +3042,11 @@
         
         // Sexni tahrirlash
         const editWorkshop = async function(id) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda tahrirlash huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 let workshops = [...appData.workshops];
                 const workshop = workshops.find(w => w.id == id);
@@ -3095,6 +3086,11 @@
         
         // Sexni o'chirish
         const deleteWorkshop = async function(id) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda o\'chirish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 let workshops = [...appData.workshops];
                 const workshopIndex = workshops.findIndex(w => w.id == id);
@@ -3137,6 +3133,11 @@
         
         // Kirim qo'shish
         const addIncome = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda kirim qo\'shish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const date = document.getElementById('incomeDate').value;
                 const workshopId = parseInt(document.getElementById('incomeWorkshop').value);
@@ -3268,6 +3269,11 @@
         
         // Kirimni o'chirish
         const deleteIncome = async function(id) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda o\'chirish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 let incomes = [...appData.incomes];
                 const incomeIndex = incomes.findIndex(i => i.id == id);
@@ -3343,6 +3349,11 @@
         
         // Mijoz qo'shish (MODAL ORQALI)
         const addClient = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda mijoz qo\'shish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const name = document.getElementById('modalClientName').value.trim();
                 const phone = document.getElementById('modalClientPhone').value.trim();
@@ -3390,6 +3401,11 @@
         
         // Yangi mijoz qo'shish (tab ichidagi)
         const addClientFromTab = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda mijoz qo\'shish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const name = document.getElementById('newClientName').value.trim();
                 const phone = document.getElementById('newClientPhone').value.trim();
@@ -3435,6 +3451,11 @@
         
         // Mijozni tahrirlash
         const editClient = async function(id) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda tahrirlash huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 let clients = [...appData.clients];
                 const client = clients.find(c => c.id == id);
@@ -3472,6 +3493,11 @@
         
         // Mijozni o'chirish
         const deleteClient = async function(id) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda o\'chirish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 let clients = [...appData.clients];
                 const clientIndex = clients.findIndex(c => c.id == id);
@@ -3512,6 +3538,11 @@
         
         // Sotuv qo'shish
         const addSale = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda sotuv qo\'shish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const clientId = parseInt(document.getElementById('saleClient').value);
                 const date = document.getElementById('saleDate').value;
@@ -3646,6 +3677,11 @@
         
         // Sotuvni o'chirish
         const deleteSale = async function(id) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda o\'chirish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 let sales = [...appData.sales];
                 const saleIndex = sales.findIndex(s => s.id == id);
@@ -3703,6 +3739,11 @@
         
         // Brak qaydnomasi (Mijozdan brak olib kelish) - TURLANGAN VERSIYA
         const processDefect = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda brak qaydnomasi huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const clientId = parseInt(document.getElementById('defectClient').value);
                 const workshopId = parseInt(document.getElementById('defectWorkshop').value);
@@ -3861,6 +3902,11 @@
         
         // Sexga qaytarish (Brak mahsulotni sexga qaytarish)
         const processReturnToWorkshop = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda sexga qaytarish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const workshopId = parseInt(document.getElementById('returnToWorkshopSelect').value);
                 const productKey = document.getElementById('returnToWorkshopProduct').value;
@@ -3962,6 +4008,11 @@
         
         // Qaytishni o'chirish - TURLANGAN VERSIYA
         const deleteReturn = async function(id, type) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda o\'chirish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 if (type === 'defect') {
                     let defects = [...appData.defects];
@@ -4067,6 +4118,11 @@
         
         // Qarz to'lov modalini ko'rsatish
         const showDebtPaymentModal = function(type, id, name, debt) {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda to\'lov qilish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             document.getElementById('debtPaymentModalTitle').textContent = `${name} - Qarz to'lash`;
             document.getElementById('currentDebtAmount').textContent = formatNumber(Math.round(debt)) + ' so\'m';
             document.getElementById('debtPaymentAmount').value = Math.round(debt);
@@ -4082,6 +4138,11 @@
         
         // Qarz to'lash
         const processDebtPayment = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda to\'lov qilish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const type = document.getElementById('debtPaymentType').value;
                 const id = parseInt(document.getElementById('debtPaymentId').value);
@@ -4179,6 +4240,11 @@
         
         // To'lov qilish (eski usul)
         const processPayment = async function() {
+            if (currentUserType === 'viewer') {
+                showMessage('Sizda to\'lov qilish huquqi yo\'q!', 'error');
+                return;
+            }
+            
             try {
                 const paymentType = document.getElementById('paymentType').value;
                 const workshopId = paymentType === 'workshop' ? parseInt(document.getElementById('paymentWorkshop').value) : null;
@@ -4275,7 +4341,7 @@
             }
         };
         
-        // Kirish funksiyasi
+        // KIRISH FUNKSIYASI (2 TA ADMIN REJIMI)
         const login = function() {
             const userIdInput = document.getElementById('userId').value.trim();
             const isClient = document.getElementById('clientBtn').classList.contains('active');
@@ -4284,9 +4350,14 @@
             document.getElementById('loginError').style.display = 'none';
             
             if (isAdmin) {
+                // ASOSIY ADMIN (parol: 2) - barcha huquqlar
                 if (userIdInput === '2') {
                     currentUserType = 'admin';
-                    currentUser = { name: 'Admin', role: 'admin' };
+                    currentUser = { 
+                        name: 'Dostonbek', 
+                        role: 'admin',
+                        permissions: 'full' // Barcha huquqlar
+                    };
                     
                     document.getElementById('loginPage').style.display = 'none';
                     document.getElementById('mainPage').style.display = 'block';
@@ -4296,20 +4367,49 @@
                     document.getElementById('clientPage').style.display = 'none';
                     document.getElementById('dashboardPage').style.display = 'block';
                     
-                    document.getElementById('currentUserType').innerHTML = '<span class="badge badge-primary">Admin</span>';
+                    document.getElementById('currentUserType').innerHTML = '<span class="badge badge-primary">Dostonbek</span>';
                     
                     updateDashboard();
                     
-                    addActivity('login', 'Admin tizimga kirdi');
+                    addActivity('login', 'Dostonbek tizimga kirdi');
+                    
+                    return;
+                }
+                // KO'RUVCHI ADMIN (parol: 1111) - faqat ko'rish huquqi
+                else if (userIdInput === '1111') {
+                    currentUserType = 'viewer';
+                    currentUser = { 
+                        name: 'Ko\'ruvchi', 
+                        role: 'viewer',
+                        permissions: 'readonly' // Faqat ko'rish huquqi
+                    };
+                    
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    
+                    document.getElementById('adminNav').style.display = 'flex';
+                    document.getElementById('clientInfoCard').style.display = 'none';
+                    document.getElementById('clientPage').style.display = 'none';
+                    document.getElementById('dashboardPage').style.display = 'block';
+                    
+                    document.getElementById('currentUserType').innerHTML = '<span class="badge badge-secondary">Ko\'ruvchi</span>';
+                    
+                    // Ko'ruvchi admin uchun o'zgartirish tugmalarini yashirish
+                    setTimeout(hideEditButtons, 100);
+                    
+                    updateDashboard();
+                    
+                    addActivity('login', 'Ko\'ruvchi admin tizimga kirdi');
                     
                     return;
                 } else {
-                    document.getElementById('errorText').textContent = 'Adashlar paroni biladi';
+                    document.getElementById('errorText').textContent = 'Noto\'g\'ri parol! Adminlar parolini biladi';
                     document.getElementById('loginError').style.display = 'flex';
                     return;
                 }
             }
             
+            // Mijoz login qismi - o'zgarmadi
             if (isClient) {
                 if (!userIdInput || userIdInput.length !== 6 || isNaN(userIdInput)) {
                     document.getElementById('errorText').textContent = 'Iltimos, 6 xonali ID raqamini kiriting!';
@@ -4352,7 +4452,7 @@
             document.getElementById('loginError').style.display = 'flex';
         };
         
-        // Chiqish funksiyasi
+        // CHIQISH FUNKSIYASI
         const logout = function() {
             currentUser = null;
             currentUserType = null;
@@ -4362,6 +4462,18 @@
             
             document.getElementById('userId').value = '';
             document.getElementById('loginError').style.display = 'none';
+            
+            // Inputlarni qayta faollashtirish
+            document.querySelectorAll('input, select, textarea').forEach(input => {
+                input.disabled = false;
+                input.style.backgroundColor = '';
+                input.style.cursor = '';
+            });
+            
+            // Butonlarni qayta ko'rsatish
+            document.querySelectorAll('button').forEach(button => {
+                button.style.display = '';
+            });
         };
         
         // Tema o'zgartirish
@@ -4458,6 +4570,11 @@
                         // Agar mijozlar tab'iga o'tilsa, uni yangilash
                         if (tabId === 'clientsListTab') {
                             setTimeout(updateClientsTab, 100);
+                        }
+                        
+                        // Ko'ruvchi admin uchun tekshirish
+                        if (currentUserType === 'viewer') {
+                            setTimeout(hideEditButtons, 100);
                         }
                     });
                 });
@@ -4640,10 +4757,10 @@
                     }
                     
                     document.getElementById('saleTotalQuantity').textContent = formatNumber(quantity) + ' dona';
-                    document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so\'m';
-                    document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so\'m';
-                    document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so\'m';
-                    document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so\'m';
+                    document.getElementById('saleTotalAmount').textContent = formatNumber(Math.round(totalAmount)) + ' so`m';
+                    document.getElementById('saleTotalPaid').textContent = formatNumber(Math.round(paid)) + ' so`m';
+                    document.getElementById('saleTotalDebt').textContent = formatNumber(Math.round(debt)) + ' so`m';
+                    document.getElementById('saleEstimatedProfit').textContent = formatNumber(Math.round(estimatedProfit)) + ' so`m';
                 };
                 
                 const saleQuantityInput = document.getElementById('saleQuantity');
@@ -4664,11 +4781,11 @@
                 window.deleteIncome = deleteIncome;
                 window.showDebtPaymentModal = showDebtPaymentModal;
                 
-                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.1 (Tuzatilgan)');
-                console.log('Brak narxi muammosi tuzatildi: mijozga sotilgan narxda hisoblanadi');
-                console.log('Foyda hisobi tuzatildi: brak va qaytarishlar foydadan chiqariladi');
-                console.log('Qarz to\'lovlari tab\'lari muammosi tuzatildi');
-                console.log('Admin paroli: aytmiman');
+                console.log('Halat Savdosi Tizimi yuklandi. Versiya: 6.2 (2 xil admin)');
+                console.log('Admin parollar:');
+                console.log('1. Asosiy admin (barcha huquqlar): 2');
+                console.log('2. Ko\'ruvchi admin (faqat ko\'rish): 1111');
+                console.log('Ko\'ruvchi admin faqat ma\'lumotlarni ko\'ra oladi, hech narsani o\'zgartira olmaydi!');
                 
                 // Oflayn ma'lumotlarni sinxronlash
                 setTimeout(() => {
