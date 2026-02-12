@@ -5058,5 +5058,365 @@ const deleteExpense = async function(id) {
             }
         });
     </script>
+<!-- ================= QUICK DEBTS PATCH START ================= -->
+
+<script>
+/* =========================================================
+   QUICK DEBTS (ESKI QARZLAR) — SAFE PATCH
+   Fixlar:
+   1) updatePage() endi PARAMETRSIZ chaqirilmaydi (bo‘sh ekran bug’i yo‘q)
+   2) Tarix jadvali pastda doim ko‘rinib turmaydi (tab-content lar debts card ichida)
+========================================================= */
+
+(function() {
+  if (!window.quickDebts) window.quickDebts = {};
+
+  function qdToday() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function qdShowAlert(msg) {
+    alert(msg);
+  }
+
+  function qdFormatType(t) {
+    if (t === "workshop") return "Sex";
+    if (t === "client") return "Mijoz";
+    if (t === "minus") return "Minus";
+    return t || "";
+  }
+
+  async function qdGetPersonName(refType, personId) {
+    const path = refType === "workshop" ? "workshops" : "clients";
+    const data = await DB.load(path) || {};
+    const row = data && data[personId];
+    return (row && row.name) ? row.name : personId;
+  }
+
+  function qdFindDebtsCard() {
+    const debtsPage = document.getElementById("debtsPage");
+    if (!debtsPage) return null;
+    return debtsPage.querySelector(".card") || null;
+  }
+
+  function qdBindSingleTabButton(btn, card) {
+    if (!btn || btn.dataset.qdBound === "1") return;
+    btn.dataset.qdBound = "1";
+
+    btn.addEventListener("click", function() {
+      const tabId = this.getAttribute("data-tab");
+
+      this.parentElement.querySelectorAll(".tab-btn").forEach(tb => tb.classList.remove("active"));
+      card.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+
+      this.classList.add("active");
+      const tabContent = document.getElementById(tabId);
+      if (tabContent) tabContent.classList.add("active");
+
+      if (tabId === "quickDebtHistoryTab") {
+        loadQuickDebtHistory();
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const card = qdFindDebtsCard();
+    if (!card) return;
+
+    const tabs = card.querySelector(".tabs");
+    if (!tabs) return;
+
+    // Buttons
+    if (!document.getElementById("quickDebtTabBtn")) {
+      tabs.insertAdjacentHTML("beforeend", `
+        <button class="tab-btn" id="quickDebtTabBtn" data-tab="quickDebtTab">Eski qarzlar (tezkor)</button>
+        <button class="tab-btn" id="quickDebtHistoryBtn" data-tab="quickDebtHistoryTab">Eski qarzlar tarixi</button>
+      `);
+    }
+
+    // Contents INSIDE debts card
+    if (!card.querySelector("#quickDebtTab")) {
+      const lastTab = card.querySelector(".tab-content:last-of-type");
+      const insertTarget = lastTab ? lastTab : tabs;
+
+      insertTarget.insertAdjacentHTML("afterend", `
+        <div id="quickDebtTab" class="tab-content">
+          <div class="card">
+            <h3 class="card-title">Eski qarz qo‘shish</h3>
+
+            <div class="form-group">
+              <label class="form-label">Qarz turi *</label>
+              <select id="qdType" class="form-control">
+                <option value="">Tanlang</option>
+                <option value="workshop">Sex</option>
+                <option value="client">Mijoz</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Kim *</label>
+              <select id="qdPerson" class="form-control">
+                <option value="">Tanlang</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Summa (so'm) *</label>
+              <input type="number" id="qdAmount" class="form-control" placeholder="0" min="1" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sana *</label>
+              <input type="date" id="qdDate" class="form-control" value="${qdToday()}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Izoh</label>
+              <input type="text" id="qdNote" class="form-control" placeholder="Masalan: Eski qarz">
+            </div>
+
+            <button id="saveQuickDebtBtn" class="btn btn-success">
+              <i class="fas fa-save"></i> SAQLASH
+            </button>
+          </div>
+        </div>
+
+        <div id="quickDebtHistoryTab" class="tab-content">
+          <div class="card">
+            <h3 class="card-title">Eski qarzlar tarixi</h3>
+
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Sana</th>
+                    <th>Kim</th>
+                    <th>Turi</th>
+                    <th>Summa</th>
+                    <th>Izoh</th>
+                    <th class="text-center">Minus</th>
+                    <th class="text-center">O‘chirish</th>
+                  </tr>
+                </thead>
+                <tbody id="quickDebtHistoryBody"></tbody>
+              </table>
+            </div>
+
+            <div id="quickDebtHistoryEmpty" class="empty-state" style="display:none;">
+              <i class="fas fa-history"></i>
+              <h3>Tarix bo‘sh</h3>
+              <p>Hozircha eski qarzlar yozilmagan</p>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    // Bind only our buttons
+    qdBindSingleTabButton(document.getElementById("quickDebtTabBtn"), card);
+    qdBindSingleTabButton(document.getElementById("quickDebtHistoryBtn"), card);
+  });
+
+  // Type change → load people
+  document.addEventListener("change", async (e) => {
+    if (e.target && e.target.id === "qdType") {
+      const type = e.target.value;
+      const select = document.getElementById("qdPerson");
+      if (!select) return;
+
+      select.innerHTML = `<option value="">Tanlang</option>`;
+
+      if (type === "workshop") {
+        const data = await DB.load("workshops") || {};
+        Object.keys(data).forEach(id => {
+          const name = (data[id] && data[id].name) ? data[id].name : id;
+          select.innerHTML += `<option value="${id}">${name}</option>`;
+        });
+      }
+
+      if (type === "client") {
+        const data = await DB.load("clients") || {};
+        Object.keys(data).forEach(id => {
+          const name = (data[id] && data[id].name) ? data[id].name : id;
+          select.innerHTML += `<option value="${id}">${name}</option>`;
+        });
+      }
+    }
+  });
+
+  // SAVE (+)
+  document.addEventListener("click", async (e) => {
+    const btn = e.target && e.target.closest ? e.target.closest("#saveQuickDebtBtn") : null;
+    if (!btn) return;
+
+    const type = (document.getElementById("qdType")?.value || "").trim();
+    const personId = (document.getElementById("qdPerson")?.value || "").trim();
+    const amount = Number(document.getElementById("qdAmount")?.value || 0);
+    const date = (document.getElementById("qdDate")?.value || "").trim();
+    const note = (document.getElementById("qdNote")?.value || "").trim();
+
+    if (!type) return qdShowAlert("Qarz turini tanlang!");
+    if (!personId) return qdShowAlert("Shaxsni tanlang!");
+    if (!Number.isFinite(amount) || amount <= 0) return qdShowAlert("Summa 0 dan katta bo‘lsin!");
+    if (!date) return qdShowAlert("Sanani tanlang!");
+
+    quickDebts = await DB.load("quickDebts") || {};
+
+    const id = "qd_" + Date.now();
+    quickDebts[id] = {
+      type: type,
+      personId: personId,
+      amount: amount,
+      date: date,
+      note: note
+    };
+
+    const path = type === "workshop" ? "workshops" : "clients";
+    const data = await DB.load(path) || {};
+    if (!data[personId]) return qdShowAlert("Tanlangan shaxs topilmadi (bazada yo‘q).");
+
+    data[personId].debt = Number(data[personId].debt || 0) + amount;
+
+    await DB.save(path, data);
+    await DB.save("quickDebts", quickDebts);
+
+    // ✅ FIX: updatePage() param bilan
+    if (typeof updatePage === "function") {
+      const p = (typeof currentPage !== "undefined" && currentPage) ? currentPage : "debts";
+      updatePage(p);
+    }
+
+    const historyTab = document.getElementById("quickDebtHistoryTab");
+    if (historyTab && historyTab.classList.contains("active")) {
+      await loadQuickDebtHistory();
+    }
+
+    document.getElementById("qdAmount").value = "";
+    document.getElementById("qdNote").value = "";
+    qdShowAlert("Eski qarz saqlandi ✅");
+  });
+
+  // LOAD HISTORY
+  window.loadQuickDebtHistory = async function loadQuickDebtHistory() {
+    quickDebts = await DB.load("quickDebts") || {};
+    const body = document.getElementById("quickDebtHistoryBody");
+    const empty = document.getElementById("quickDebtHistoryEmpty");
+    if (!body) return;
+
+    const ids = Object.keys(quickDebts || {})
+      .sort((a, b) => {
+        const da = quickDebts[a]?.date || "";
+        const db = quickDebts[b]?.date || "";
+        if (db !== da) return db.localeCompare(da);
+        return b.localeCompare(a);
+      });
+
+    body.innerHTML = "";
+
+    if (!ids.length) {
+      if (empty) empty.style.display = "block";
+      return;
+    }
+    if (empty) empty.style.display = "none";
+
+    for (const id of ids) {
+      const d = quickDebts[id];
+      if (!d) continue;
+
+      const refType = d.type === "minus" ? (d.refType || "") : d.type;
+      let who = d.personId;
+      if (refType === "workshop" || refType === "client") {
+        who = await qdGetPersonName(refType, d.personId);
+      }
+
+      const typeText = qdFormatType(d.type);
+      const amountText = (Number(d.amount || 0)).toLocaleString("uz-UZ") + " so'm";
+      const canMinus = (d.type === "workshop" || d.type === "client");
+
+      body.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${d.date || ""}</td>
+          <td>${who}</td>
+          <td>${typeText}</td>
+          <td>${amountText}</td>
+          <td>${d.note || ""}</td>
+          <td class="text-center">
+            <button class="btn btn-warning btn-sm" onclick="minusQuickDebt('${id}')" title="Kamaytirish" ${canMinus ? "" : "disabled"}>
+              <i class="fas fa-minus"></i>
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-danger btn-sm" onclick="deleteQuickDebt('${id}')" title="O‘chirish">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `);
+    }
+  };
+
+  // MINUS (-)
+  window.minusQuickDebt = async function minusQuickDebt(id) {
+    quickDebts = await DB.load("quickDebts") || {};
+    const d = quickDebts[id];
+    if (!d) return qdShowAlert("Yozuv topilmadi.");
+
+    if (!(d.type === "workshop" || d.type === "client")) {
+      return qdShowAlert("Faqat (+) yozuvlarni kamaytirish mumkin.");
+    }
+
+    const ok = confirm("Shu qarzni kamaytirasizmi? (-) yozuv yaratiladi.");
+    if (!ok) return;
+
+    const mid = "qd_minus_" + Date.now();
+
+    quickDebts[mid] = {
+      type: "minus",
+      refType: d.type,
+      personId: d.personId,
+      amount: d.amount,
+      date: qdToday(),
+      note: (d.note ? ("Minus: " + d.note) : "Minus")
+    };
+
+    const path = d.type === "workshop" ? "workshops" : "clients";
+    const data = await DB.load(path) || {};
+    if (!data[d.personId]) return qdShowAlert("Shaxs topilmadi (bazada yo‘q).");
+
+    const current = Number(data[d.personId].debt || 0);
+    let next = current - Number(d.amount || 0);
+    if (next < 0) next = 0;
+    data[d.personId].debt = next;
+
+    await DB.save(path, data);
+    await DB.save("quickDebts", quickDebts);
+
+    if (typeof updatePage === "function") {
+      const p = (typeof currentPage !== "undefined" && currentPage) ? currentPage : "debts";
+      updatePage(p);
+    }
+
+    await loadQuickDebtHistory();
+    qdShowAlert("Qarz kamaytirildi ✅");
+  };
+
+  // DELETE (tarix yozuvini o‘chiradi, balansga tegmaydi — minimal patch)
+  window.deleteQuickDebt = async function deleteQuickDebt(id) {
+    quickDebts = await DB.load("quickDebts") || {};
+    if (!quickDebts[id]) return;
+
+    const ok = confirm("Tarix yozuvini o‘chirasizmi?");
+    if (!ok) return;
+
+    delete quickDebts[id];
+    await DB.save("quickDebts", quickDebts);
+    await loadQuickDebtHistory();
+  };
+})();
+</script>
+
+<!-- ================= QUICK DEBTS PATCH END ================= -->
+
+
 </body>
 </html>
